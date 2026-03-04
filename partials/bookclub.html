@@ -1,0 +1,255 @@
+<div class="page-content">
+
+    <!-- Chargement -->
+    <div ng-if="loading" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Erreur fatale -->
+    <div ng-if="error && !loading" class="alert alert-error">
+        {{ error }}
+        <br>
+        <a href="#!/bookclubs" class="btn-link" style="margin-top: 0.5rem; display: inline-block;">
+            ← Retour aux bookclubs
+        </a>
+    </div>
+
+    <!-- Contenu principal -->
+    <div ng-if="!loading && !error && club">
+
+        <!-- Retour -->
+        <div class="page-back">
+            <button class="btn-link" ng-click="goBack()">← Bookclubs</button>
+        </div>
+
+        <!-- ── En-tête du club ──────────────────────────────────────────── -->
+        <div class="club-detail-header">
+
+            <div class="club-detail-logo-wrap">
+                <img class="club-detail-logo"
+                     ng-if="club.logo_url"
+                     ng-src="{{ club.logo_url }}"
+                     alt="{{ club.name }}">
+                <div class="club-detail-logo club-detail-logo-placeholder"
+                     ng-if="!club.logo_url">
+                    {{ club.name ? club.name[0].toUpperCase() : '?' }}
+                </div>
+            </div>
+
+            <div class="club-detail-info">
+                <div class="club-detail-name">{{ club.name }}</div>
+                <p class="club-detail-desc" ng-if="club.description">{{ club.description }}</p>
+                <div class="club-detail-meta">
+                    <span>{{ members.length }} membre{{ members.length !== 1 ? 's' : '' }}</span>
+                    <span class="badge-public"  ng-if="club.is_public">Public</span>
+                    <span class="badge-private" ng-if="!club.is_public">Privé</span>
+                </div>
+            </div>
+
+            <div class="club-detail-actions">
+                <button class="btn btn-secondary" ng-if="isOwner()" ng-click="goToSettings()">
+                    <i data-lucide="settings"></i> Paramètres
+                </button>
+                <button class="btn btn-primary"
+                        ng-if="myRole === null"
+                        ng-click="joinClub()"
+                        ng-disabled="membershipLoading">
+                    <span ng-if="!membershipLoading">Rejoindre</span>
+                    <span ng-if="membershipLoading">...</span>
+                </button>
+                <button class="btn btn-ghost"
+                        ng-if="myRole === 'member'"
+                        ng-click="leaveClub()"
+                        ng-disabled="membershipLoading">
+                    Quitter
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ── Lecture en cours ──────────────────────────────────────────── -->
+        <div class="bc-reading-block">
+            <div class="bc-reading-label">
+                <i data-lucide="book-open" class="bc-reading-label-icon"></i>
+                Lecture en cours
+                <button ng-if="isOwner()"
+                        class="btn-link bc-reading-settings-link"
+                        ng-click="goToSettings()"
+                        title="Modifier dans les paramètres">
+                    <i data-lucide="settings" style="width:14px;height:14px;vertical-align:middle;"></i> Modifier
+                </button>
+            </div>
+
+            <!-- Livre défini (cliquable → page livre) -->
+            <div ng-if="currentBook"
+                 class="bc-reading-card"
+                 ng-click="goToBook()">
+                <img ng-if="currentBook.cover_url"
+                     class="bc-reading-cover"
+                     ng-src="{{ currentBook.cover_url }}"
+                     alt="{{ currentBook.title }}">
+                <div ng-if="!currentBook.cover_url"
+                     class="bc-reading-cover-placeholder">📖</div>
+
+                <div class="bc-reading-info">
+                    <div class="bc-reading-title">{{ currentBook.title }}</div>
+                    <div ng-if="currentBook.author" class="bc-reading-author">{{ currentBook.author }}</div>
+                    <div ng-if="club.current_chapter_title" class="bc-reading-chapter">
+                        Chapitre : {{ club.current_chapter_title }}
+                        <span ng-if="club.current_chapter_number && club.current_chapter_total">
+                            ({{ club.current_chapter_number }}/{{ club.current_chapter_total }})
+                        </span>
+                    </div>
+                    <div ng-if="!club.current_chapter_title && club.current_chapter_number"
+                         class="bc-reading-chapter">
+                        Chapitre {{ club.current_chapter_number }}<span ng-if="club.current_chapter_total"> / {{ club.current_chapter_total }}</span>
+                    </div>
+                </div>
+
+                <i data-lucide="chevron-right" class="bc-reading-chevron"></i>
+            </div>
+
+            <!-- Aucune lecture -->
+            <div ng-if="!currentBook" class="bc-reading-empty">
+                <span>Aucune lecture en cours.</span>
+                <button ng-if="isOwner()"
+                        class="btn btn-secondary btn-sm"
+                        ng-click="goToSettings()">
+                    Définir dans les paramètres
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ── Onglets sections ────────────────────────────────────────── -->
+        <div class="club-list-tabs">
+            <button class="club-tab"
+                    ng-class="{'club-tab--active': activeSection === 'discussions'}"
+                    ng-click="switchSection('discussions')">
+                <i data-lucide="message-square"></i> Discussions
+            </button>
+            <button class="club-tab"
+                    ng-class="{'club-tab--active': activeSection === 'members'}"
+                    ng-click="switchSection('members')">
+                <i data-lucide="users"></i> Membres ({{ members.length }})
+            </button>
+        </div>
+
+        <!-- ── SECTION DISCUSSIONS ────────────────────────────────────── -->
+        <div ng-if="activeSection === 'discussions'" class="club-section">
+
+                <!-- Bouton / formulaire de création -->
+                <div ng-if="isMember()" style="margin-bottom: 1rem;">
+                    <button class="btn btn-secondary"
+                            ng-if="!showDiscForm"
+                            ng-click="toggleDiscForm()">
+                        <i data-lucide="plus"></i> Nouvelle discussion
+                    </button>
+
+                    <div class="club-inline-form" ng-if="showDiscForm">
+                        <div ng-if="discError" class="alert alert-error" style="margin-bottom: 0.5rem;">
+                            {{ discError }}
+                        </div>
+                        <input type="text" class="form-control"
+                               ng-model="disc.title"
+                               placeholder="Titre de la discussion..."
+                               ng-keyup="$event.keyCode === 13 && submitDiscussion()">
+                        <div class="club-inline-form-actions">
+                            <button class="btn btn-primary btn-sm"
+                                    ng-click="submitDiscussion()"
+                                    ng-disabled="creatingDisc || !disc.title">
+                                <span ng-if="!creatingDisc">Créer</span>
+                                <span ng-if="creatingDisc">...</span>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" ng-click="toggleDiscForm()">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- État vide -->
+                <div ng-if="discussions.length === 0" class="club-empty-state">
+                    <p>Aucune discussion pour le moment.</p>
+                    <button class="club-empty-cta btn btn-secondary"
+                            ng-if="isMember()"
+                            ng-click="toggleDiscForm()">
+                        Démarrer une discussion
+                    </button>
+                    <p ng-if="!isMember()" style="font-size: 0.9rem; color: var(--text-tertiary);">
+                        Rejoignez ce bookclub pour participer.
+                    </p>
+                </div>
+
+                <!-- Fils de discussion -->
+                <div class="thread-list" ng-if="discussions.length > 0">
+                    <div class="thread-item"
+                         ng-repeat="disc in discussions"
+                         ng-click="goToDiscussion(disc)">
+                        <div class="thread-icon">
+                            <i data-lucide="message-circle"></i>
+                        </div>
+                        <div class="thread-body">
+                            <div class="thread-title">{{ disc.title }}</div>
+                            <div class="thread-meta">
+                                {{ disc.user ? disc.user.username : '—' }} ·
+                                {{ formatDate(disc.created_at) }}
+                            </div>
+                        </div>
+                        <div class="thread-arrow">
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+
+        <!-- ── SECTION MEMBRES ────────────────────────────────────────── -->
+        <div ng-if="activeSection === 'members'" class="club-section">
+
+            <div ng-if="members.length === 0" class="club-empty-state">
+                <p>Aucun membre.</p>
+            </div>
+
+            <div class="bc-member-list" ng-if="members.length > 0">
+                <div ng-repeat="member in members" class="bc-member-card">
+
+                    <!-- Avatar -->
+                    <img ng-if="member.user && member.user.profile_picture"
+                         class="bc-member-avatar"
+                         ng-src="{{ member.user.profile_picture }}"
+                         alt="{{ member.user.username }}">
+                    <div ng-if="!member.user || !member.user.profile_picture"
+                         class="bc-member-avatar-placeholder">
+                        {{ (member.user && member.user.username) ? member.user.username[0].toUpperCase() : '?' }}
+                    </div>
+
+                    <!-- Nom -->
+                    <div class="bc-member-info">
+                        <a ng-if="member.user && member.user.username"
+                           href="#!/profile/{{ member.user.username }}"
+                           class="bc-member-name">
+                            {{ member.user.username }}
+                        </a>
+                        <span ng-if="!member.user || !member.user.username"
+                              class="bc-member-name bc-member-name--unknown">
+                            Membre inconnu
+                        </span>
+                    </div>
+
+                    <!-- Badge rôle -->
+                    <div class="bc-member-badge">
+                        <span class="club-role-badge"
+                              ng-class="member.role === 'owner' ? 'club-role-badge--admin' : 'club-role-badge--member'">
+                            {{ member.role === 'owner' ? 'Admin' : 'Membre' }}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- /club content -->
+
+</div>

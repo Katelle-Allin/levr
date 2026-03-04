@@ -1,0 +1,167 @@
+<div class="container">
+    <div class="page-header">
+        <h2>Rechercher un livre</h2>
+        <p>Trouvez des livres via Open Library et ajoutez-les à votre bibliothèque</p>
+    </div>
+
+    <!-- Messages -->
+    <div ng-if="error" class="alert alert-error">{{ error }}</div>
+    <div ng-if="success" class="alert alert-success">{{ success }}</div>
+
+    <!-- Barre de recherche -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" 
+                   class="search-input" 
+                   ng-model="searchQuery"
+                   ng-keypress="onKeyPress($event)"
+                   placeholder="Titre, auteur, ISBN..."
+                   ng-disabled="searching">
+            <button class="btn btn-primary search-btn" 
+                    ng-click="search()" 
+                    ng-disabled="searching || !searchQuery">
+                <span ng-if="!searching">🔍 Rechercher</span>
+                <span ng-if="searching">Recherche...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Résultats de recherche -->
+    <div ng-if="searchResults.length > 0" class="search-results">
+        <h3>{{ searchResults.length }} résultat(s)</h3>
+        
+        <div class="books-grid">
+            <div class="book-card" ng-repeat="book in searchResults">
+                <div class="book-cover" ng-click="goToBook(book)" style="cursor:pointer">
+                    <img ng-if="book.cover_url"
+                         ng-src="{{ book.cover_url }}"
+                         alt="{{ book.title }}"
+                         onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+                    <div ng-if="!book.cover_url" class="book-cover-placeholder">
+                        📚
+                    </div>
+                </div>
+
+                <div class="book-info">
+                    <h4 class="book-title book-title--link" ng-click="goToBook(book)" style="cursor:pointer">{{ book.title }}</h4>
+                    <p class="book-author">{{ book.author }}</p>
+                    <p ng-if="book.first_publish_year" class="book-year">
+                        {{ book.first_publish_year }}
+                    </p>
+
+                    <p class="book-rating-row" ng-if="ratingsMap[book.book_id]">
+                        ★ {{ ratingsMap[book.book_id].avg | number:1 }}
+                        <span class="book-rating-count">({{ ratingsMap[book.book_id].count }} avis)</span>
+                    </p>
+                    <p class="book-rating-empty" ng-if="ratingsLoaded && !ratingsMap[book.book_id]">
+                        Aucun avis
+                    </p>
+
+                    <p class="book-genre-row" ng-if="book.genre_levr">
+                        <span class="genre-badge">{{ book.genre_levr }}</span>
+                    </p>
+
+                    <button class="btn btn-secondary btn-sm"
+                            ng-click="openAddModal(book)">
+                        + Ajouter à ma bibliothèque
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'ajout -->
+    <div class="modal-overlay" ng-if="showAddModal" ng-click="closeAddModal()">
+        <div class="modal-content" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Ajouter à ma bibliothèque</h3>
+                <button class="modal-close" ng-click="closeAddModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-book-preview">
+                    <img ng-if="selectedBook.cover_url"
+                         ng-src="{{ selectedBook.cover_url }}"
+                         alt="{{ selectedBook.title }}"
+                         class="modal-book-cover">
+                    <div>
+                        <h4>{{ selectedBook.title }}</h4>
+                        <p>{{ selectedBook.author }}</p>
+                    </div>
+                </div>
+
+                <div ng-if="error" class="alert alert-error">{{ error }}</div>
+
+                <div class="form-group">
+                    <label>Dans quelle étagère ?</label>
+
+                    <div class="shelf-options">
+                        <!-- Étagères par défaut -->
+                        <label class="shelf-option" ng-repeat="shelf in defaultShelves">
+                            <input type="radio"
+                                   ng-model="$parent.selectedShelf"
+                                   ng-value="shelf.value"
+                                   name="shelf">
+                            <span class="shelf-option-label">{{ shelf.label }}</span>
+                        </label>
+
+                        <!-- Étagères personnalisées (chargées depuis Supabase) -->
+                        <label class="shelf-option shelf-option-custom" ng-repeat="shelf in userShelves">
+                            <input type="radio"
+                                   ng-model="$parent.selectedShelf"
+                                   ng-value="shelf.name"
+                                   name="shelf">
+                            <span class="shelf-option-label">{{ shelf.name }}</span>
+                            <span class="shelf-option-badge">Perso</span>
+                        </label>
+                    </div>
+
+                    <!-- Formulaire de création d'étagère inline -->
+                    <div ng-if="!creatingShelf" class="shelf-create-trigger">
+                        <button type="button"
+                                class="btn-link"
+                                ng-click="showCreateShelf()">
+                            + Créer une nouvelle étagère
+                        </button>
+                    </div>
+
+                    <div ng-if="creatingShelf" class="new-shelf-form">
+                        <div ng-if="shelfError" class="alert alert-error shelf-alert">{{ shelfError }}</div>
+                        <div class="new-shelf-input-row">
+                            <input type="text"
+                                   class="form-control"
+                                   ng-model="newShelfName"
+                                   placeholder="Ex : Classiques, Philo, Favoris 2026..."
+                                   ng-keypress="onShelfKeyPress($event)"
+                                   autofocus>
+                            <button type="button"
+                                    class="btn btn-primary btn-sm"
+                                    ng-click="validateNewShelf()"
+                                    ng-disabled="savingShelf || !newShelfName.trim()">
+                                <span ng-if="!savingShelf">Valider</span>
+                                <span ng-if="savingShelf">...</span>
+                            </button>
+                        </div>
+                        <button type="button"
+                                class="btn-link"
+                                ng-click="cancelCreateShelf()">
+                            ← Retour
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" ng-click="closeAddModal()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary"
+                        ng-click="addToLibrary()"
+                        ng-disabled="adding || !selectedShelf">
+                    <span ng-if="!adding">Ajouter</span>
+                    <span ng-if="adding">Ajout...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

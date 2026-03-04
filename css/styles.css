@@ -1,0 +1,6457 @@
+/* ==================== VARIABLES & RESET ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* THÈME CLAIR (par défaut) */
+:root, body.light-mode {
+    color-scheme: light;
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e8ecf1;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-tertiary: #718096;
+    --accent-blue: #002FA7;
+    --accent-blue-light: #0039d4;
+    --accent-blue-dark: #001f70;
+    --accent: #002FA7;
+    --border-color: #e2e8f0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --sidebar-bg: #ffffff;
+    --sidebar-hover: rgba(0, 47, 167, 0.08);
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e0;
+    --sidebar-width: 64px;
+    --topbar-height: 60px;
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    /* Tokens supplémentaires */
+    --surface-raised: rgba(0, 0, 0, 0.05);
+    --toggle-track: rgba(0, 0, 0, 0.18);
+    --danger-text: #dc2626;
+    --success-text: #16a34a;
+    --font-editorial: Georgia, 'Times New Roman', serif;
+    --font-ui: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --content-max-width: 720px;
+}
+
+/* THÈME SOMBRE */
+body.dark-mode {
+    color-scheme: dark;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #0f0f0f;
+    --text-primary: #f5f5f5;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --accent-blue: #002FA7;
+    --accent-blue-light: #0039d4;
+    --accent-blue-dark: #001f70;
+    --accent: #002FA7;
+    --border-color: rgba(245, 245, 245, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --sidebar-bg: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+    --sidebar-hover: rgba(0, 47, 167, 0.15);
+    --card-bg: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+    --input-bg: rgba(245, 245, 245, 0.05);
+    --input-border: rgba(245, 245, 245, 0.1);
+    --sidebar-width: 64px;
+    --topbar-height: 60px;
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    /* Tokens supplémentaires */
+    --surface-raised: rgba(245, 245, 245, 0.07);
+    --toggle-track: rgba(245, 245, 245, 0.2);
+    --danger-text: #fca5a5;
+    --success-text: #86efac;
+    --font-editorial: Georgia, 'Times New Roman', serif;
+    --font-ui: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --content-max-width: 720px;
+}
+
+body {
+    font-family: var(--font-ui);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ==================== TOP BAR ==================== */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--topbar-height);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 200;
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.topbar-brand {
+    font-family: var(--font-editorial);
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.topbar-left,
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.topbar-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.topbar-icon-btn:hover {
+    background: var(--sidebar-hover);
+    color: var(--accent-blue);
+}
+
+.topbar-icon-btn svg { width: 18px; height: 18px; }
+
+.topbar-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+
+.user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.35rem 0.5rem;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    transition: background 0.15s;
+}
+
+.user-menu-trigger:hover { background: var(--sidebar-hover); }
+.user-menu-trigger svg { width: 14px; height: 14px; }
+
+.user-menu-wrap { position: relative; }
+
+.user-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    z-index: 300;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    transition: background 0.12s;
+    white-space: nowrap;
+}
+
+.dropdown-item:hover { background: var(--sidebar-hover); }
+.dropdown-item--danger { color: var(--danger-text); }
+.dropdown-item--danger:hover { background: rgba(220, 38, 38, 0.08); }
+.dropdown-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.25rem 0;
+}
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--topbar-height);
+    width: 64px;
+    height: calc(100vh - var(--topbar-height));
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0;
+    z-index: 100;
+}
+
+.sidebar-logo {
+    display: block;
+    text-align: center;
+    font-family: var(--font-editorial);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    letter-spacing: 1.5px;
+    padding: 0.25rem 0 1rem;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0.2rem auto;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: var(--accent-blue);
+}
+
+.sidebar-link svg { width: 20px; height: 20px; stroke-width: 1.75; }
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+    margin-left: 64px;
+    padding: 2rem;
+    padding-top: calc(var(--topbar-height) + 1.5rem);
+    min-height: 100vh;
+}
+
+.main-content.full-width {
+    margin-left: 0;
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==================== CONTAINERS ==================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.auth-container {
+    background: var(--card-bg);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 450px;
+    width: 100%;
+    border: 1px solid var(--border-color);
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    font-family: var(--font-editorial);
+    font-size: 1.75rem;
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ==================== FORMS ==================== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.1);
+}
+
+.form-control::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* ==================== GENRES SELECTION ==================== */
+.genres-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.genre-item {
+    position: relative;
+}
+
+.genre-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.genre-label {
+    display: block;
+    padding: 1rem;
+    background: var(--surface-raised);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.genre-item input[type="checkbox"]:checked + .genre-label {
+    background: rgba(0, 47, 167, 0.2);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.genre-label:hover {
+    border-color: rgba(0, 47, 167, 0.5);
+}
+
+.genre-count {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+    padding: 0.875rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+}
+
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+/* Full-width variant — à ajouter uniquement sur les boutons de formulaire */
+.btn-block {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    background: #0039d4;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 47, 167, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-link {
+    color: var(--accent-blue);
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: #0039d4;
+}
+
+/* ==================== ALERTS ==================== */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.alert-error {
+    background: rgba(220, 38, 38, 0.12);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: var(--danger-text);
+}
+
+.alert-success {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: var(--success-text);
+}
+
+/* ==================== USER CARDS ==================== */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.user-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(0, 47, 167, 0.3);
+}
+
+.user-card h3 {
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.user-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.genre-tag {
+    padding: 0.375rem 0.75rem;
+    background: rgba(0, 47, 167, 0.1);
+    border: 1px solid rgba(0, 47, 167, 0.25);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+/* ==================== LOADING ==================== */
+.loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.1rem;
+    color: var(--text-tertiary);
+}
+
+/* ==================== AUTH TOGGLE ==================== */
+.auth-toggle {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.auth-toggle p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .sidebar-menu li {
+        margin: 0;
+    }
+
+    .sidebar-menu a {
+        padding: 0.75rem 1.5rem;
+        white-space: nowrap;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+        border-left: none;
+        border-bottom-color: var(--accent-blue);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .auth-container {
+        padding: 2rem;
+    }
+
+    .genres-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-public-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar-wrapper {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* ==================== PROFIL - AVATAR ==================== */
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.avatar-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.profile-avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-blue);
+}
+
+.avatar-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.avatar-hint {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}
+
+/* ==================== PROFIL - CARTES ==================== */
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.profile-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+}
+
+.profile-info-group {
+    margin-bottom: 1.5rem;
+}
+
+.profile-info-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.profile-info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.profile-social-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ==================== PROFIL - FORMULAIRE ==================== */
+.form-hint {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+/* ==================== SETTINGS - THÈME ROW ==================== */
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.setting-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.setting-title {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.setting-desc {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+/* Le toggle dans la setting-row: ancré à droite, jamais en absolu */
+.setting-row .toggle-label {
+    flex: 0 0 auto;
+    margin: 0;
+    gap: 0;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 1rem;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    background: var(--toggle-track);
+    border-radius: 13px;
+    transition: background 0.3s;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.toggle-input:checked + .toggle-switch {
+    background: var(--accent-blue);
+}
+
+.toggle-input:checked + .toggle-switch::after {
+    transform: translateX(24px);
+}
+
+.toggle-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+/* ==================== STATISTIQUES DE LECTURE ==================== */
+.stats-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.stats-card h3 {
+    color: var(--accent-blue);
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(0, 47, 167, 0.08);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(0, 47, 167, 0.2);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin: 0.5rem 0;
+}
+
+.stat-card .stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.favorite-genre {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(0, 47, 167, 0.05);
+    border-radius: 8px;
+    color: var(--text-primary);
+}
+
+/* ==================== PROFIL PUBLIC ==================== */
+.profile-public-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.profile-public-header {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.profile-avatar-wrapper {
+    flex-shrink: 0;
+}
+
+.profile-public-info {
+    flex: 1;
+}
+
+.profile-public-info h2 {
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.follow-actions {
+    margin-top: 1.5rem;
+}
+
+.profile-bio {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.profile-bio p {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.profile-section {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.profile-section h3 {
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+/* ==================== PROFIL PRIVÉ ==================== */
+.private-profile {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.private-profile-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.private-profile h3 {
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+}
+
+.private-profile p {
+    color: var(--text-secondary);
+}
+
+/* ==================== BIBLIOTHÈQUE - RECHERCHE ==================== */
+.search-container {
+    margin: 2rem 0;
+}
+
+.search-box {
+    display: flex;
+    gap: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.search-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: var(--input-bg);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.1);
+}
+
+.search-btn {
+    white-space: nowrap;
+}
+
+.search-results {
+    margin-top: 3rem;
+}
+
+.search-results h3 {
+    color: var(--accent-blue);
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+}
+
+/* ==================== GRILLE DE LIVRES ==================== */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.book-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(0, 47, 167, 0.3);
+}
+
+.book-cover {
+    width: 100%;
+    aspect-ratio: 2/3;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.book-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: linear-gradient(135deg, rgba(0, 47, 167, 0.2) 0%, rgba(0, 47, 167, 0.05) 100%);
+}
+
+.book-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-author {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.book-year {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    color: var(--accent-blue);
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.modal-close:hover {
+    background: var(--bg-tertiary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-book-preview {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-book-cover {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.modal-book-preview h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.modal-book-preview p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.shelf-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.shelf-option {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shelf-option:hover {
+    border-color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.05);
+}
+
+.shelf-option input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.shelf-option input[type="radio"]:checked + .shelf-option-label {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.shelf-option-label {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+/* Badge "Perso" sur les étagères personnalisées */
+.shelf-option-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    background: rgba(0, 47, 167, 0.12);
+    color: var(--accent-blue);
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+}
+
+/* Lien "+ Créer une nouvelle étagère" */
+.shelf-create-trigger {
+    margin-top: 0.75rem;
+}
+
+/* Formulaire inline de création d'étagère */
+.new-shelf-form {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.new-shelf-input-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.new-shelf-input-row .form-control {
+    flex: 1;
+    margin: 0;
+    padding: 0.6rem 0.875rem;
+}
+
+.new-shelf-input-row .btn-sm {
+    flex-shrink: 0;
+    margin-top: 0;
+    width: auto;
+    white-space: nowrap;
+}
+
+.shelf-alert {
+    padding: 0.6rem 0.875rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Bouton secondaire (Annuler dans la modale) */
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ==================== BIBLIOTHÈQUE - MA COLLECTION ==================== */
+.empty-library {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.empty-library-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-library h3 {
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+}
+
+.empty-library p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.library-filters {
+    margin: 2rem 0;
+}
+
+.shelf-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.shelf-chip {
+    padding: 0.75rem 1.5rem;
+    background: var(--surface-raised);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shelf-chip:hover {
+    border-color: rgba(0, 47, 167, 0.5);
+    background: rgba(0, 47, 167, 0.08);
+}
+
+.shelf-chip.active {
+    background: rgba(0, 47, 167, 0.15);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.library-books {
+    margin-top: 2rem;
+}
+
+.library-book-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.library-book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(0, 47, 167, 0.3);
+}
+
+.book-shelf-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: rgba(0, 47, 167, 0.1);
+    border: 1px solid rgba(0, 47, 167, 0.25);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.book-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+.book-action-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.book-action-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.book-shelf-select {
+    padding: 0.5rem;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.book-shelf-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.1);
+}
+
+.btn-delete {
+    background: rgba(220, 38, 38, 0.12);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: var(--danger-text);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: rgba(220, 38, 38, 0.22);
+    transform: scale(1.1);
+}
+
+.empty-filter {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-tertiary);
+}
+
+.user-stats {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.user-book-count {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FEED & POST CARDS
+   ═══════════════════════════════════════════════════════════════ */
+
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.feed-inline {
+    max-width: 100%;
+    margin: 0;
+}
+
+.feed-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    gap: 0.75rem;
+    color: var(--text-tertiary);
+    text-align: center;
+}
+
+.feed-empty-inline {
+    min-height: 80px;
+    padding: 1.5rem 0;
+}
+
+.feed-empty-icon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.feed-empty h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.feed-empty p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.post-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color 0.15s;
+}
+
+.post-card:hover {
+    border-color: var(--accent);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.post-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid var(--border-color);
+}
+
+.post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0; /* permet le wrapping dans un flex parent */
+}
+
+/* Ligne username + activité sur la même ligne, avec retour à la ligne si besoin */
+.post-meta-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.post-author {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.post-author:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+/* Texte d'activité grisé (ex: "a commencé sa lecture de") */
+.post-activity {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    min-width: 0;
+}
+
+/* Titre du livre cliquable */
+.post-activity-link {
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.post-activity-link:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+.post-time {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.post-content {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.post-image-wrap {
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 400px;
+}
+
+.post-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    display: block;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-profile-link {
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.post-profile-link:hover {
+    text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST STACK — Premium redesign
+   ═══════════════════════════════════════════════════════════════ */
+
+.toast-stack {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.65rem;
+    width: 400px;
+    max-width: calc(100vw - 2rem);
+}
+
+@keyframes toast-slide-in {
+    0%   { transform: translateY(16px); opacity: 0; }
+    60%  { transform: translateY(-4px); opacity: 1; }
+    100% { transform: translateY(0);    opacity: 1; }
+}
+
+.toast {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid transparent;
+    border-radius: 12px;
+    padding: 1rem 1rem 1rem 1.1rem;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    animation: toast-slide-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.toast-prompt {
+    border-left-color: var(--accent);
+}
+
+/* Dot indicator */
+.toast-icon {
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+}
+
+.toast-icon-dot {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.18);
+}
+
+.toast-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.toast-title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.toast-subtitle {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.toast-message {
+    margin: 0 0 0.4rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--text-primary);
+}
+
+.toast-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.1rem;
+}
+
+.toast-btn {
+    padding: 0.38rem 0.9rem;
+    border-radius: 7px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s, border-color 0.14s;
+    white-space: nowrap;
+}
+
+.toast-btn:hover {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+}
+
+.toast-btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.38rem 1.1rem;
+}
+
+.toast-btn-primary:hover {
+    background: #0023a0;
+    border-color: #0023a0;
+    color: #fff;
+}
+
+.toast-dismiss {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+    border-radius: 4px;
+    transition: color 0.14s;
+}
+
+.toast-dismiss:hover {
+    color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POST-CREATE MODAL — Premium redesign
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes modal-pop-in {
+    from { transform: scale(0.95) translateY(8px); opacity: 0; }
+    to   { transform: scale(1)    translateY(0);   opacity: 1; }
+}
+
+.post-create-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.60);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.post-create-modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.2);
+    animation: modal-pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* — Header — */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.modal-activity-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(0, 47, 167, 0.1);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    line-height: 1.4;
+    width: fit-content;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.modal-close {
+    background: var(--surface-raised);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.14s, color 0.14s;
+}
+
+.modal-close:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* — Body — */
+.modal-body {
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Image preview */
+.post-image-preview {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 240px;
+    background: var(--surface-raised);
+}
+
+.post-image-preview img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.2s;
+}
+
+.post-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0.75rem;
+    transition: background 0.2s;
+}
+
+.post-image-preview:hover .post-image-overlay {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.post-image-change {
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.14s;
+    backdrop-filter: blur(4px);
+}
+
+.post-image-preview:hover .post-image-change {
+    opacity: 1;
+}
+
+.post-image-change:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+/* Image empty zone */
+.post-image-empty {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 72px;
+    color: var(--text-tertiary);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.post-image-empty-icon {
+    font-size: 1.2rem;
+}
+
+.post-image-empty:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 47, 167, 0.04);
+}
+
+/* Textarea */
+.post-textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 108px;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    padding: 0.875rem;
+    line-height: 1.55;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.post-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.12);
+}
+
+.post-textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* — Footer — */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 1rem 1.5rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-ghost {
+    padding: 0 1rem;
+    height: 44px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s;
+}
+
+.btn-ghost:hover {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+}
+
+.btn-publish {
+    height: 48px;
+    padding: 0 1.5rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: background 0.14s, box-shadow 0.14s, transform 0.1s;
+    box-shadow: 0 2px 10px rgba(0, 47, 167, 0.3);
+}
+
+.btn-publish:hover:not(:disabled) {
+    background: #0023a0;
+    box-shadow: 0 4px 16px rgba(0, 47, 167, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-publish:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-publish:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ── Character counter (modal) ── */
+.post-char-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: -0.25rem;
+}
+
+.post-char-counter--warn {
+    color: #d97706;   /* amber-600 — visible en clair et en sombre */
+    font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POST ACTIONS (like, comment, delete)
+   ═══════════════════════════════════════════════════════════════ */
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Boutons d'action génériques (like, comment) */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s;
+    line-height: 1;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+}
+
+.action-btn:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+/* État "liké" */
+.action-btn--liked {
+    color: #e11d48;  /* rose vif — visible en clair ET sombre */
+}
+
+.action-btn--liked:hover:not(:disabled) {
+    background: rgba(225, 29, 72, 0.08);
+    color: #e11d48;
+}
+
+/* État "actif" (ex: section commentaires ouverte) */
+.action-btn--active {
+    color: var(--accent);
+    background: rgba(0, 47, 167, 0.07);
+}
+
+/* Bouton supprimer (danger) — discret par défaut, rouge au hover */
+.action-btn--danger {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    padding: 0.3rem 0.5rem;
+}
+
+.action-btn--danger:hover {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+/* Bouton supprimer positionné à droite dans le header du post */
+.post-delete-btn {
+    margin-left: auto;
+}
+
+/* Icône + compteur */
+.action-icon  { font-size: 1rem; line-height: 1; }
+.action-count { font-size: 0.8rem; }
+
+/* Lien "Voir le profil" repoussé à droite */
+.post-actions .post-profile-link {
+    margin-left: auto;
+}
+
+/* Mode lecture seule (dans Mon profil) */
+.post-actions--readonly {
+    pointer-events: none;
+    border-top: none;
+    padding-top: 0.25rem;
+    gap: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMMENTAIRES
+   ═══════════════════════════════════════════════════════════════ */
+
+.post-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.comment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.comment-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1.5px solid var(--border-color);
+    margin-top: 0.1rem;
+}
+
+.comment-bubble {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface-raised);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-bottom: 0.2rem;
+    flex-wrap: wrap;
+}
+
+.comment-author {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.comment-time {
+    font-size: 0.73rem;
+    color: var(--text-tertiary);
+}
+
+.comment-content {
+    margin: 0;
+    font-size: 0.87rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+/* Bouton × pour supprimer son commentaire */
+.comment-delete {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.2rem;
+    flex-shrink: 0;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    transition: color 0.14s, background 0.14s;
+}
+
+.comment-delete:hover {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+/* Lien "Voir les N commentaires" */
+.comment-show-more {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    transition: color 0.14s;
+}
+
+.comment-show-more:hover {
+    color: var(--accent);
+}
+
+/* Rangée de saisie d'un nouveau commentaire */
+.comment-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comment-input {
+    flex: 1;
+    height: 36px;
+    padding: 0 0.75rem;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 18px;
+    color: var(--text-primary);
+    font-size: 0.87rem;
+    font-family: inherit;
+    transition: border-color 0.14s, box-shadow 0.14s;
+    min-width: 0;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 47, 167, 0.1);
+}
+
+.comment-input::placeholder { color: var(--text-tertiary); }
+
+/* Bouton d'envoi du commentaire */
+.comment-send-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.14s, transform 0.1s;
+}
+
+.comment-send-btn:hover:not(:disabled) {
+    background: #0023a0;
+    transform: scale(1.05);
+}
+
+.comment-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MON PROFIL — section "Mes posts"
+   ═══════════════════════════════════════════════════════════════ */
+
+.my-posts-section {
+    margin-top: 1.5rem;
+}
+
+/* En-tête de section avec compteur */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
+/* ── Encart "Commencer un post" (section Mes posts du profil) ──────────────── */
+.create-post-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    margin-bottom: 1.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+/* Empêche tout enfant flex de déborder */
+.create-post-card > * {
+    min-width: 0;
+}
+.create-post-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.1);
+}
+.create-post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 40px;
+}
+.create-post-input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--surface-raised);
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.create-post-card:hover .create-post-input {
+    border-color: var(--accent-blue);
+}
+.create-post-btn {
+    flex: 0 0 auto;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    margin-top: 0;
+}
+@media (max-width: 640px) {
+    .create-post-card {
+        flex-wrap: wrap;
+    }
+    .create-post-input {
+        /* remplit la ligne à côté de l'avatar */
+        flex-basis: calc(100% - 52px);
+    }
+    .create-post-btn {
+        flex: 0 0 100%;
+        width: 100%;
+        height: 38px;
+        margin-top: 4px;
+    }
+}
+
+/* Badge arrondi avec le nombre de posts */
+.post-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    background: var(--accent-blue);   /* fix: --accent était indéfini */
+    color: #fff;
+    font-size: 0.73rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BOOKCLUBS
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Navigation retour ──────────────────────────────────────────────── */
+.page-back {
+    margin-bottom: 1.25rem;
+}
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+.btn-back:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+/* ── Page liste : header (onglets + bouton créer) ───────────────────── */
+.club-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+}
+.club-list-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-raised);
+    border-radius: 10px;
+    padding: 4px;
+}
+.club-tab {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.club-tab--active {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Recherche ──────────────────────────────────────────────────────── */
+.club-search-row {
+    margin-bottom: 1.25rem;
+}
+.club-search-input {
+    max-width: 420px;
+}
+
+/* ── Grille de clubs ────────────────────────────────────────────────── */
+.club-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.club-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    box-shadow: var(--shadow);
+}
+.club-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 16px rgba(0, 47, 167, 0.1);
+}
+.club-card--explore {
+    cursor: default;
+}
+.club-card-logo-wrap {
+    flex-shrink: 0;
+}
+.club-card-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+.club-card-logo-placeholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--accent-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.club-card-body {
+    flex: 1;
+    min-width: 0;
+}
+.club-card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.club-card-desc {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.club-card-meta {
+    margin-top: 6px;
+}
+.club-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.club-join-btn {
+    white-space: nowrap;
+}
+.club-card-arrow {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Badges rôle ────────────────────────────────────────────────────── */
+.club-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.club-role-badge--admin {
+    background: rgba(0, 47, 167, 0.12);
+    color: var(--accent-blue);
+}
+.club-role-badge--member {
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+}
+.badge-public {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--success-text);
+}
+.badge-private {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--surface-raised);
+    color: var(--text-tertiary);
+}
+
+/* ── Page détail : header ───────────────────────────────────────────── */
+.club-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.club-detail-logo-wrap {
+    flex-shrink: 0;
+}
+.club-detail-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    object-fit: cover;
+}
+.club-detail-logo-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: var(--accent-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.club-detail-info {
+    flex: 1;
+    min-width: 0;
+}
+.club-detail-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+.club-detail-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 8px;
+}
+.club-detail-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.club-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ── Sections (discussions, events, etc.) ───────────────────────────── */
+.club-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+}
+.club-section-btn {
+    white-space: nowrap;
+}
+.club-empty-state {
+    padding: 1rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+.club-empty-cta {
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+/* Formulaire inline (nouvelle discussion / événement) */
+.club-inline-form {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 1rem;
+}
+.club-inline-form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+/* Lecture en cours */
+.current-book-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--surface-raised);
+    border-radius: 10px;
+}
+.current-book-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+.current-book-icon {
+    font-size: 1.5rem;
+}
+.small {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+}
+
+/* ── Threads (liste des discussions) ────────────────────────────────── */
+.thread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+.thread-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.thread-item:hover {
+    background: var(--surface-raised);
+}
+.thread-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.thread-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.thread-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.thread-meta {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+}
+.thread-arrow {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.thread-msg-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1px 7px;
+    flex-shrink: 0;
+}
+/* Discussion creation modal — narrower than book picker */
+.disc-create-modal {
+    max-width: 440px;
+}
+
+/* ── Événements ─────────────────────────────────────────────────────── */
+.event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+.event-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px;
+    background: var(--surface-raised);
+    border-radius: 10px;
+}
+.event-date-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 6px 8px;
+    background: var(--accent-blue);
+    color: #fff;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+.event-day {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.event-month {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.event-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+.event-time {
+    font-size: 0.82rem;
+    color: var(--text-tertiary);
+}
+.event-desc {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ── Page discussion — voir bloc "Chat WhatsApp-style" en bas du fichier ── */
+
+/* ── Upload image de club ───────────────────────────────────────────── */
+.club-image-upload-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    background: var(--surface-raised);
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    user-select: none;
+}
+.club-image-upload-zone:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+.club-image-upload-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.club-image-preview-wrap {
+    position: relative;
+    display: inline-flex;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.club-image-preview {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+.club-image-remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.club-image-remove-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* ── Sélecteur de visibilité (remplace le toggle dans la modale) ─────── */
+.club-visibility-options {
+    display: flex;
+    gap: 10px;
+}
+.club-visibility-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.club-visibility-option input[type="radio"] {
+    display: none;
+}
+.club-visibility-option--active {
+    border-color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.07);
+}
+.club-visibility-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.club-visibility-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.club-visibility-text strong {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+.club-visibility-text small {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* ── Modale création de club ────────────────────────────────────────── */
+.club-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.club-modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    animation: modal-pop-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.club-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 0;
+}
+.club-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.club-modal-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.club-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 20px 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ── Responsive mobile ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .club-list-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .club-detail-header {
+        flex-wrap: wrap;
+    }
+    .club-detail-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .club-section .message-list {
+        max-height: 50vh;
+    }
+    .message-bubble-wrap {
+        max-width: 85%;
+    }
+    .book-picker-modal {
+        max-height: 92vh;
+    }
+    .book-picker-list {
+        max-height: 220px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOKCLUB DETAIL — Créé par
+   ═══════════════════════════════════════════════════════════════ */
+
+.club-detail-created-by {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0.2rem 0 0;
+}
+
+.club-owner-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+}
+.club-owner-link:hover,
+.club-owner-link:focus {
+    color: var(--accent-blue);
+    text-decoration: underline;
+    outline: none;
+}
+
+/* ── En-tête section : groupe de boutons aligné à droite ────── */
+.section-header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOKCLUB DETAIL — Lecture en cours
+   ═══════════════════════════════════════════════════════════════ */
+
+.current-reading-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.current-reading-cover {
+    width: 72px;
+    height: 104px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.current-reading-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.current-reading-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.current-reading-author {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem;
+}
+
+.current-reading-chapter {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin: 0;
+    font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODALE — Sélecteur de livre (book picker)
+   ═══════════════════════════════════════════════════════════════ */
+
+.book-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 1rem;
+}
+
+.book-picker-modal {
+    background: var(--card-bg);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+.book-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.book-picker-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.book-picker-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.book-picker-search {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.book-picker-list {
+    overflow-y: auto;
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-right: 2px;
+}
+
+.book-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.book-picker-item:hover {
+    border-color: var(--border-color);
+}
+
+.book-picker-item--selected {
+    border-color: var(--accent-blue) !important;
+}
+
+.book-picker-cover {
+    width: 40px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.book-picker-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-picker-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-picker-author {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.book-picker-status {
+    font-size: 0.68rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+}
+
+.book-picker-check {
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.book-picker-chapter-row {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.book-picker-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+/* ==================== BOOKCLUB DETAIL — nouvelles fonctionnalités ==================== */
+
+/* Badge nombre de membres */
+.badge-members {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.65rem;
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+}
+
+/* Modale paramètres du club */
+.club-settings-modal {
+    max-width: 480px;
+}
+
+/* Footer de la modale paramètres : delete à gauche, annuler+enregistrer à droite */
+.club-settings-footer {
+    justify-content: space-between !important;
+}
+
+.club-settings-footer-right {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Bouton outlined danger (Supprimer) */
+.btn-danger-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--danger-text);
+    color: var(--danger-text);
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.btn-danger-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   Chat WhatsApp-style — Discussion module
+   ============================================================ */
+
+/* ── Conteneur principal ─────────────────────────────────── */
+.discussion-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--topbar-height) - 5rem);
+    min-height: 400px;
+}
+
+.discussion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.discussion-title {
+    font-family: var(--font-editorial);
+    font-size: 1.2rem;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* ── Liste des messages ──────────────────────────────────── */
+.message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+/* ── Séparateur de jour ──────────────────────────────────── */
+.day-separator {
+    text-align: center;
+    margin: 1rem 0 0.5rem;
+    flex-shrink: 0;
+}
+
+.day-separator span {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.2rem 0.8rem;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+}
+
+/* ── Avatar ──────────────────────────────────────────────── */
+.message-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ── Bulle de message ────────────────────────────────────── */
+.message-item {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    max-width: 78%;
+    margin-bottom: 0.15rem;
+    /* flex-start : l'item enveloppe son contenu au lieu de s'étirer
+       sur toute la largeur du conteneur flex-column */
+    align-self: flex-start;
+}
+
+.message-item--mine {
+    flex-direction: row-reverse;
+    /* aligne l'item sur le bord droit sans marge fixe */
+    align-self: flex-end;
+}
+
+.message-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    max-width: 100%;
+    position: relative; /* pour le picker de réactions */
+}
+
+/* Contenu de mes propres messages : tout aligné à droite */
+.message-item--mine .message-bubble-wrap {
+    align-items: flex-end;
+}
+
+.message-author {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 0.05rem;
+    padding-left: 0.1rem;
+}
+
+.message-bubble {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px 16px 16px 4px;
+    padding: 0.55rem 0.85rem;
+    color: var(--text-primary);
+    word-wrap: break-word;
+    word-break: break-word;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.message-item--mine .message-bubble {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+}
+
+.message-bubble--pending {
+    opacity: 0.55;
+}
+
+/* ── Méta (heure + actions) ──────────────────────────────── */
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 18px;
+    padding: 0 0.1rem;
+}
+
+/* Pour mes messages : heure à droite, actions avant (order inversé) */
+.message-item--mine .message-meta {
+    flex-direction: row-reverse;
+}
+
+.message-time {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.message-actions {
+    display: none;
+    gap: 0.15rem;
+    align-items: center;
+}
+
+.message-bubble-wrap:hover .message-actions {
+    display: flex;
+}
+
+.message-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: background 0.12s, color 0.12s;
+}
+
+.message-action-btn:hover {
+    background: var(--sidebar-hover);
+    color: var(--text-primary);
+}
+
+.message-action-btn--danger:hover {
+    color: var(--danger-text);
+}
+
+/* ── Citation (reply_to) dans une bulle — voir section REPLY PREVIEW en bas ── */
+
+/* ── Bannière de réponse (au-dessus de l'input) ──────────── */
+.reply-banner {
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.reply-banner strong {
+    color: var(--text-primary);
+}
+
+.reply-banner-cancel {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 0 0.2rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.12s;
+}
+
+.reply-banner-cancel:hover {
+    color: var(--text-primary);
+}
+
+/* ── Réactions ───────────────────────────────────────────── */
+.reaction-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    padding-left: 0.1rem;
+}
+
+/* Chips de mes messages alignés à droite */
+.message-item--mine .reaction-row {
+    justify-content: flex-end;
+    padding-left: 0;
+    padding-right: 0.1rem;
+}
+
+.reaction-chip {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    line-height: 1.4;
+    transition: background 0.12s, border-color 0.12s;
+    white-space: nowrap;
+}
+
+.reaction-chip:hover {
+    background: var(--sidebar-hover);
+}
+
+.reaction-chip--mine {
+    border-color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.08);
+}
+
+body.dark-mode .reaction-chip--mine {
+    background: rgba(0, 47, 167, 0.2);
+}
+
+/* Picker flottant */
+.reaction-picker {
+    display: flex;
+    gap: 0.2rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 0.3rem 0.5rem;
+    box-shadow: var(--shadow);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 0;
+    z-index: 50;
+    white-space: nowrap;
+}
+
+.message-item--mine .reaction-picker {
+    left: auto;
+    right: 0;
+}
+
+.reaction-picker button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.15rem;
+    padding: 0.1rem 0.15rem;
+    border-radius: 4px;
+    transition: transform 0.1s;
+    line-height: 1;
+}
+
+.reaction-picker button:hover {
+    transform: scale(1.25);
+}
+
+/* ── Champ de saisie ─────────────────────────────────────── */
+.message-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.5rem 0.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.message-input {
+    flex: 1;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 0.55rem 1rem;
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+    min-width: 0;
+}
+
+.message-input:focus {
+    border-color: var(--accent-blue);
+}
+
+.message-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.message-send-btn {
+    background: var(--accent-blue);
+    color: #fff;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+.message-send-btn:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: scale(1.05);
+}
+
+.message-send-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.message-send-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   PAGE LIVRE — Book Detail
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Conteneur page ───────────────────────────────────────────────── */
+.book-page {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ── Header : cover + métadonnées ─────────────────────────────────── */
+.book-header {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 600px) {
+    .book-header {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Cover */
+.book-cover-wrap {
+    flex-shrink: 0;
+}
+
+.book-cover-large {
+    width: 160px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    display: block;
+}
+
+.book-cover-large-placeholder {
+    width: 160px;
+    height: 240px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
+
+/* Métadonnées */
+.book-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.book-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.book-author {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.book-year {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+/* Stats rapides */
+.book-stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--accent-blue);
+    margin-top: 0.25rem;
+}
+
+.book-stats-empty {
+    color: var(--text-tertiary);
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+/* Description */
+.book-description-wrap {
+    margin-top: 0.5rem;
+}
+
+.book-description {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0 0 0.4rem;
+    white-space: pre-line;
+}
+
+.desc-toggle {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+    font-weight: 500;
+}
+
+.desc-toggle:hover {
+    text-decoration: underline;
+}
+
+/* ── Section générique (Mon avis / Communauté) ────────────────────── */
+.book-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem;
+}
+
+/* ── Sélecteur d'étoiles ──────────────────────────────────────────── */
+.star-picker {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    user-select: none;
+}
+
+.star {
+    font-size: 1.6rem;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color 0.12s, transform 0.1s;
+    line-height: 1;
+}
+
+.star:hover,
+.star--filled,
+.star--hover {
+    color: #f59e0b;
+}
+
+.star:active {
+    transform: scale(1.2);
+}
+
+.star-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-left: 0.35rem;
+}
+
+/* Étoiles en lecture seule (liste avis) */
+.star-readonly {
+    display: inline-flex;
+    gap: 1px;
+}
+
+.star-sm {
+    font-size: 0.95rem;
+    cursor: default;
+}
+
+/* ── Formulaire avis ──────────────────────────────────────────────── */
+.review-textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.review-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+/* ── Liste avis communauté ────────────────────────────────────────── */
+.review-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.review-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: 0.3rem;
+}
+
+.review-username {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.review-username:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+.review-date {
+    font-size: 0.82rem;
+}
+
+.review-edited {
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.review-content {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* Bouton "Afficher plus" */
+.btn-show-more {
+    display: block;
+    margin: 0 auto;
+}
+
+/* ── Titre cliquable dans la recherche ────────────────────────────── */
+.book-title--link:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   REPLY PREVIEW — encart "Réponse à" dans les bulles
+   ══════════════════════════════════════════════════════════════════════ */
+
+.reply-preview {
+    cursor: pointer;
+    border-left: 3px solid var(--accent-blue);
+    background: rgba(0, 47, 167, 0.07);
+    border-radius: 4px 8px 8px 4px;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* width:100% + box-sizing évite le "float" quand message-bubble-wrap
+       a align-items:flex-end (messages "mine") */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: background 0.15s;
+}
+
+.reply-preview:hover {
+    background: rgba(0, 47, 167, 0.13);
+}
+
+.reply-preview-author {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reply-preview-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* "Message supprimé" */
+.reply-preview-text:empty::before {
+    content: 'Message supprimé';
+    font-style: italic;
+    color: var(--text-tertiary);
+}
+
+/* ── Variante "mes messages" (fond bleu) ─────────────────────────── */
+
+.message-item--mine .reply-preview {
+    /* Overlay sombre sur le fond bleu → contraste bien visible */
+    border-left-color: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.message-item--mine .reply-preview:hover {
+    background: rgba(0, 0, 0, 0.26);
+}
+
+.message-item--mine .reply-preview-author {
+    color: #fff;
+}
+
+.message-item--mine .reply-preview-text {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Highlight temporaire au scroll ──────────────────────────────── */
+
+@keyframes msg-highlight {
+    0%   { background: rgba(0, 47, 167, 0.14); border-radius: 12px; }
+    60%  { background: rgba(0, 47, 167, 0.08); }
+    100% { background: transparent; }
+}
+
+.message-item--highlight {
+    animation: msg-highlight 1.2s ease-out forwards;
+}
+
+/* ── Paramètres bookclub — upload photo de couverture ────────────── */
+
+.settings-cover-section {
+    margin-bottom: 1rem;
+}
+
+.settings-cover-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.settings-cover-preview {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.settings-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.settings-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.settings-cover-uploading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 0.75rem;
+    border-radius: 12px;
+}
+
+.settings-cover-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ==================== READING SESSION MODAL ==================== */
+
+.session-create-modal {
+    max-width: 460px;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.session-modal-body {
+    padding: 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Book picker list */
+.book-picker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.book-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.book-picker-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.book-picker-cover {
+    width: 36px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: var(--bg-tertiary);
+}
+
+.book-picker-cover-placeholder {
+    width: 36px;
+    height: 48px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+}
+
+.book-picker-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-picker-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-picker-author {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Shelf badge chip */
+.shelf-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.shelf-badge--en-cours {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.shelf-badge--a-lire {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+}
+
+/* Search sub-panel */
+.session-search-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.session-search-row .form-input {
+    flex: 1;
+}
+
+.session-search-btn {
+    flex-shrink: 0;
+}
+
+/* Selected book display */
+.session-book-selected {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.session-book-cover {
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+
+.session-book-cover-placeholder {
+    width: 48px;
+    height: 64px;
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+}
+
+.session-book-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.session-book-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.session-book-author {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+/* Last page info */
+.session-last-page {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    margin-bottom: 0.25rem;
+}
+
+/* No books empty state */
+.session-no-books {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+.session-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 0.25rem 0;
+}
+
+@media (max-width: 500px) {
+    .session-create-modal {
+        max-width: 100%;
+        border-radius: 12px 12px 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 85vh;
+    }
+}
+
+/* ==================== NAVIGATION / UX FIXES ==================== */
+
+/* Profile header : bouton Ma bibliothèque + Modifier côte à côte */
+.profile-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+/* Ratings sur les cartes de recherche */
+.book-rating-row {
+    font-size: 0.82rem;
+    color: #f59e0b;
+    font-weight: 600;
+    margin: 0.2rem 0 0.4rem;
+    line-height: 1;
+}
+
+.book-rating-row .book-rating-count {
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+.book-rating-empty {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin: 0.2rem 0 0.4rem;
+}
+
+/* Contrôle de formulaire petit format (select sur page livre) */
+.form-control-sm {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.form-control-sm:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+/* Bloc action bibliothèque sur la page livre */
+.book-library-action {
+    margin: 0.75rem 0;
+}
+
+/* Picker d'étagère inline (ajout) */
+.inline-shelf-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Livre déjà dans la bibliothèque */
+.book-already-in-lib {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.book-in-lib-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    white-space: nowrap;
+}
+
+/* ── Genre badge ───────────────────────────────────────────────────── */
+.book-genre {
+    margin: 0.2rem 0 0;
+}
+
+.genre-badge {
+    display: inline-block;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: color-mix(in srgb, var(--accent-blue) 15%, transparent);
+    color: var(--accent-blue);
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 30%, transparent);
+}
+
+.genre-badge--unset {
+    background: var(--bg-tertiary, #374151);
+    color: var(--text-tertiary, #9ca3af);
+    border-color: transparent;
+}
+
+/* Sur les petites cartes (search / bibliothèque) */
+.book-genre-row {
+    margin: 0.25rem 0;
+}
+
+/* ── Bottom navigation (mobile) ─────────────────────────────────────────── */
+/* Cachée sur desktop — activée dans la media query ci-dessous.             */
+.bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* ── Sidebar desktop : masquée sur mobile ───────────────── */
+    .sidebar {
+        display: none !important;
+    }
+
+    /* ── Contenu principal ──────────────────────────────────── */
+    /* Fixe les deux problèmes :
+       1. padding-top manquant pour la topbar fixe (60px)
+       2. padding-bottom pour ne pas être caché derrière la bottom nav */
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+        padding-top: calc(var(--topbar-height) + 1rem);
+        padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem);
+    }
+
+    /* ── Bottom navigation bar ──────────────────────────────── */
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        height: calc(56px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .bottom-nav-link {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 0.5rem 0 0.3rem;
+        transition: color 0.15s;
+        /* Zone tactile large (thumb-friendly) */
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .bottom-nav-link svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 1.75;
+    }
+
+    .bottom-nav-link span {
+        font-size: 0.62rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1;
+    }
+
+    .bottom-nav-link.active {
+        color: var(--accent-blue);
+    }
+
+    /* Indicateur actif : fine barre bleue en haut du tab */
+    .bottom-nav-link.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24px;
+        height: 2px;
+        background: var(--accent-blue);
+        border-radius: 0 0 3px 3px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POST CARD — Refonte layout feed (v2)
+   ═══════════════════════════════════════════════════════════════
+
+   Principes :
+   • Desktop : layout split 2 colonnes (image gauche | texte droite)
+   • Mobile  : colonne unique (image au-dessus, texte dessous)
+   • Image   : object-fit contain — pas de rognage agressif
+   • Texte   : tronqué à 5 lignes, bouton "Lire plus / moins"
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Card container — légèrement raffiné ──────────────────────── */
+.post-card {
+    padding: 1.1rem 1.25rem 1rem;
+    gap: 0.6rem;
+    border-radius: 14px;
+}
+
+/* ── Corps du post (image + texte) ───────────────────────────── */
+.post-body {
+    display: flex;
+    flex-direction: row;
+    gap: 0.9rem;
+    align-items: flex-start;
+}
+
+/* ── Colonne image (desktop : largeur fixe) ──────────────────── */
+.post-media {
+    flex-shrink: 0;
+    width: 120px;
+    height: 170px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-image {
+    /* Remplace l'ancienne règle object-fit: cover qui coupait l'image */
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* ── Colonne texte ───────────────────────────────────────────── */
+.post-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* ── Texte tronqué (classe appliquée par ng-class) ───────────── */
+.post-content--clamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+    white-space: normal;      /* annule pre-wrap pour le clamp */
+}
+
+/* ── Texte plein (non tronqué ou développé) ──────────────────── */
+.post-content {
+    /* Garde les autres propriétés (color, font-size, line-height…)
+       mais retire le max-height implicite de l'ancienne règle.
+       white-space: pre-wrap conservé pour les sauts de ligne. */
+}
+
+/* ── Bouton "Lire plus / Lire moins" ─────────────────────────── */
+.post-expand-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    cursor: pointer;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+    transition: opacity 0.12s;
+}
+
+.post-expand-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* ── Header — respiration améliorée ─────────────────────────── */
+.post-author {
+    font-size: 0.92rem;
+}
+
+.post-activity {
+    font-size: 0.85rem;
+}
+
+.post-time {
+    font-size: 0.78rem;
+    margin-top: 1px;
+}
+
+/* ── Actions — séparateur plus léger ────────────────────────── */
+.post-actions {
+    padding-top: 0.5rem;
+    gap: 0.15rem;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    .post-card {
+        padding: 0.9rem 1rem 0.85rem;
+        border-radius: 12px;
+    }
+
+    /* Avatar aligné en haut du header (comme un réseau social) */
+    .post-header {
+        align-items: flex-start;
+    }
+
+    /* Garde le layout côte-à-côte : couverture à gauche, texte à droite */
+    .post-body {
+        flex-direction: row;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    /* Couverture portrait compacte — visible en entier, sans rogner */
+    .post-media {
+        flex-shrink: 0;
+        width: 80px;
+        height: 120px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .post-image {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+    .post-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Feed légèrement plus compact */
+    .feed {
+        gap: 0.75rem;
+    }
+}
+
+/* ── Auth : boutons OAuth ────────────────────────────────────────────────── */
+
+.oauth-section {
+    margin-bottom: 0.25rem;
+}
+
+.btn-oauth {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.72rem 1rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 0.6rem;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-oauth:hover {
+    background: var(--bg-secondary);
+    border-color: var(--text-secondary);
+}
+
+.btn-oauth:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.btn-oauth-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* ── Auth : séparateur "ou" ──────────────────────────────────────────────── */
+
+.oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.82rem;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* ── Auth : lien "mot de passe oublié" (sous le champ mdp) ──────────────── */
+
+.forgot-link {
+    text-align: right;
+    margin-top: 0.4rem;
+}
+
+.forgot-link a {
+    font-size: 0.83rem;
+    color: var(--text-tertiary);
+    text-decoration: none;
+}
+
+.forgot-link a:hover {
+    color: var(--accent-blue);
+}
+
+/* ── Auth : erreur inline (mismatch mot de passe) ────────────────────────── */
+
+.field-error {
+    color: #e53e3e;
+    font-size: 0.82rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0;
+}
+
+/* ── Formulaires : indicateurs champ obligatoire / facultatif ─────────────── */
+
+.field-required,
+.required {
+    color: #e53e3e;
+    font-weight: 600;
+    margin-left: 2px;
+}
+.field-optional {
+    color: var(--text-tertiary);
+    font-size: 0.8rem;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+/* ── Bouton danger (rouge plein) ─────────────────────────────────────────── */
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, opacity 0.18s;
+    background: #dc2626;
+    color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+    background: #b91c1c;
+}
+.btn-danger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ── Zone de danger (bookclub settings) ──────────────────────────────────── */
+
+.club-danger-zone {
+    border-color: rgba(220, 38, 38, 0.35) !important;
+}
+.club-danger-title {
+    color: #dc2626 !important;
+}
+
+/* ── Bookclubs : avatar placeholder initiale ─────────────────────────────── */
+
+.club-card-logo-placeholder {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Bookclub — Lecture en cours + Membres (cartes horizontales)
+   Classes préfixées .bc-* pour éviter tout conflit avec le reste de l'app.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Bloc "Lecture en cours" ──────────────────────────────────────────────── */
+
+.bc-reading-block {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.bc-reading-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+}
+
+.bc-reading-label-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+.bc-reading-clear {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+.bc-reading-clear:hover {
+    color: var(--danger-text);
+    background: rgba(220, 38, 38, 0.08);
+}
+
+/* Carte livre cliquable */
+.bc-reading-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    text-decoration: none;
+}
+.bc-reading-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 10px rgba(0, 47, 167, 0.1);
+}
+
+.bc-reading-cover {
+    width: 46px;
+    height: 66px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.bc-reading-cover-placeholder {
+    width: 46px;
+    height: 66px;
+    border-radius: 5px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.bc-reading-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-reading-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-reading-author {
+    font-size: 0.82rem;
+    color: var(--text-tertiary);
+    margin: 0 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-reading-chapter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.08);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.bc-reading-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+/* État vide */
+.bc-reading-empty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+/* ── Formulaire "Définir une lecture" ────────────────────────────────────── */
+
+.bc-setbook-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bc-setbook-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.bc-setbook-search-row .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-setbook-results {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.bc-setbook-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border-color);
+}
+.bc-setbook-result:last-child { border-bottom: none; }
+.bc-setbook-result:hover { background: var(--sidebar-hover); }
+
+.bc-setbook-result-cover {
+    width: 32px;
+    height: 46px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.bc-setbook-result-cover-ph {
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.bc-setbook-result-info { min-width: 0; }
+
+.bc-setbook-result-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-setbook-result-author {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Livre sélectionné */
+.bc-setbook-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 47, 167, 0.06);
+    border: 1px solid rgba(0, 47, 167, 0.2);
+    border-radius: 8px;
+}
+
+.bc-setbook-cover {
+    width: 36px;
+    height: 52px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.bc-setbook-cover-placeholder {
+    width: 36px;
+    height: 52px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.bc-setbook-selected-info { flex: 1; min-width: 0; }
+
+.bc-setbook-selected-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bc-setbook-selected-author {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.bc-setbook-change {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+}
+
+.bc-setbook-chapter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.bc-setbook-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Membres — cartes horizontales ───────────────────────────────────────── */
+
+.bc-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bc-member-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: border-color 0.15s;
+}
+.bc-member-card:hover {
+    border-color: var(--accent-blue);
+}
+
+/* Avatar : taille fixe, rond, objet-fit cover */
+.bc-member-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50
+
+/* ================================================================================
+   Bookclub — Lecture en cours + Membres (cartes horizontales)
+   Classes prefixees .bc-* — pas de conflit avec le reste de l'app.
+   ================================================================================ */
+
+/* ── Bloc Lecture en cours ────────────────────────────────────────────────────── */
+
+.bc-reading-block {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.bc-reading-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+}
+
+.bc-reading-label-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+.bc-reading-clear {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+}
+.bc-reading-clear:hover {
+    color: var(--danger-text);
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.bc-reading-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    text-decoration: none;
+}
+.bc-reading-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 10px rgba(0, 47, 167, 0.1);
+}
+
+.bc-reading-cover {
+    width: 46px;
+    height: 66px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.bc-reading-cover-placeholder {
+    width: 46px;
+    height: 66px;
+    border-radius: 5px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.bc-reading-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-reading-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-reading-author {
+    font-size: 0.82rem;
+    color: var(--text-tertiary);
+    margin: 0 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-reading-chapter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.08);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.bc-reading-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.bc-reading-empty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+/* ── Formulaire Definir une lecture ──────────────────────────────────────────── */
+
+.bc-setbook-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bc-setbook-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.bc-setbook-search-row .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-setbook-results {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.bc-setbook-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border-color);
+}
+.bc-setbook-result:last-child { border-bottom: none; }
+.bc-setbook-result:hover { background: var(--sidebar-hover); }
+
+.bc-setbook-result-cover {
+    width: 32px;
+    height: 46px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.bc-setbook-result-cover-ph {
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.bc-setbook-result-info { min-width: 0; }
+
+.bc-setbook-result-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-setbook-result-author {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bc-setbook-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 47, 167, 0.06);
+    border: 1px solid rgba(0, 47, 167, 0.2);
+    border-radius: 8px;
+}
+
+.bc-setbook-cover {
+    width: 36px;
+    height: 52px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.bc-setbook-cover-placeholder {
+    width: 36px;
+    height: 52px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.bc-setbook-selected-info { flex: 1; min-width: 0; }
+
+.bc-setbook-selected-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bc-setbook-selected-author {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.bc-setbook-change {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+}
+
+.bc-setbook-chapter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.bc-setbook-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Membres cartes horizontales ─────────────────────────────────────────────── */
+
+.bc-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bc-member-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: border-color 0.15s;
+}
+.bc-member-card:hover {
+    border-color: var(--accent-blue);
+}
+
+.bc-member-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+}
+
+.bc-member-avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.bc-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-member-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bc-member-name:hover {
+    color: var(--accent-blue);
+}
+.bc-member-name--unknown {
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+.bc-member-badge {
+    flex-shrink: 0;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .bc-reading-block { padding: 14px 16px; }
+    .bc-reading-card  { gap: 10px; padding: 10px; }
+    .bc-reading-cover,
+    .bc-reading-cover-placeholder { width: 38px; height: 54px; }
+
+    .bc-member-card   { padding: 8px 12px; gap: 10px; }
+    .bc-member-avatar,
+    .bc-member-avatar-placeholder { width: 38px; height: 38px; min-width: 38px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bookclub Settings — Library Picker & Reading Section
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Bibliothèque (picker) ──────────────────────────────────────── */
+.bc-library-picker {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.bc-picker-search-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.bc-picker-search-row .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-picker-list {
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.bc-picker-empty {
+    padding: 1rem;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.bc-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border-color);
+}
+.bc-picker-item:last-child { border-bottom: none; }
+.bc-picker-item:hover { background: var(--bg-secondary); }
+
+.bc-picker-item-cover {
+    width: 36px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+.bc-picker-item-cover-ph {
+    width: 36px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.bc-picker-item-info {
+    flex: 1;
+    min-width: 0;
+}
+.bc-picker-item-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bc-picker-item-author {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Livre sélectionné ──────────────────────────────────────────── */
+.bc-picker-selected {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.bc-picker-cover {
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.bc-picker-cover-ph {
+    width: 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.bc-picker-selected-info {
+    flex: 1;
+    min-width: 0;
+}
+.bc-picker-selected-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+.bc-picker-selected-author {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+}
+
+/* ── Shelf badge ────────────────────────────────────────────────── */
+.bc-picker-shelf-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.25rem;
+}
+.bc-picker-shelf-badge--en_cours { background: #dbeafe; color: #1e40af; }
+.bc-picker-shelf-badge--a_lire   { background: #f3f4f6; color: #6b7280; }
+.bc-picker-shelf-badge--lu       { background: #d1fae5; color: #065f46; }
+.bc-picker-shelf-badge--abandonne{ background: #fee2e2; color: #991b1b; }
+
+/* ── Bibliothèque vide ──────────────────────────────────────────── */
+.bc-lib-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+.bc-lib-empty p { margin-bottom: 0.75rem; }
+
+.bc-lib-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+.spinner--sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+/* ── Chapter row ────────────────────────────────────────────────── */
+.bc-chapter-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.bc-chapter-row .form-group {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+/* ── Actions lecture en cours (settings) ───────────────────────── */
+.bc-reading-settings-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+/* ── Lien paramètres dans le header lecture ─────────────────────── */
+.bc-reading-settings-link {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.bc-reading-settings-link:hover { color: var(--accent-blue); }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bookclub — Avatar upload
+   ═══════════════════════════════════════════════════════════════════ */
+
+.club-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Bouton caméra en overlay sur l'avatar */
+.club-avatar-edit-btn {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: #fff;
+    border: 2px solid var(--card-bg, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s;
+}
+.club-avatar-edit-btn:hover { background: #0039d4; }
+.club-avatar-edit-btn i,
+.club-avatar-edit-btn svg {
+    width: 13px;
+    height: 13px;
+    pointer-events: none;
+}
+
+/* Message d'erreur sous l'avatar */
+.club-avatar-error {
+    font-size: 0.78rem;
+    color: var(--danger-red, #e53e3e);
+    margin-top: 0.3rem;
+    max-width: 90px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bookclub Settings — Photo du club
+   ═══════════════════════════════════════════════════════════════════ */
+
+.bc-avatar-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.bc-avatar-preview {
+    flex-shrink: 0;
+}
+
+.bc-avatar-preview-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: cover;
+    display: block;
+}
+
+.bc-avatar-preview-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    background: var(--accent-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.bc-avatar-actions {
+    flex: 1;
+    min-width: 0;
+}
+
+.bc-avatar-hint {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — v3 (search, stats, navigation)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Search bar : empilement vertical sur mobile ───────────────── */
+@media (max-width: 600px) {
+    .search-box {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .search-btn {
+        width: 100%;
+    }
+}
+
+/* ── Profil : 2 stats seulement sur mobile ─────────────────────── */
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    /* Masquer "En cours" (2e) et "À lire" (3e) */
+    .stats-grid .stat-card:nth-child(2),
+    .stats-grid .stat-card:nth-child(3) {
+        display: none;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR SESSION BUTTON (desktop uniquement)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Conteneur poussé en bas de la sidebar */
+.sidebar-session-wrap {
+    margin-top: auto;
+    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+/* Séparateur fin au-dessus du bouton */
+.sidebar-session-divider {
+    width: 32px;
+    height: 1px;
+    background: var(--border-color);
+    margin-bottom: 0.6rem;
+}
+
+.sidebar-session-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-blue);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-session-btn:hover {
+    background: #001e8a;
+    transform: scale(1.06);
+}
+
+.sidebar-session-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.75;
+    stroke: #fff;
+    fill: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTTOM NAV FAB — bouton central "Session lecture"
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Masqué par défaut (le bottom-nav lui-même est masqué sur desktop) */
+.bottom-nav-fab {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .bottom-nav-fab {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        color: #fff;
+        border: none;
+        /* Double ombre : élévation forte + halo de couleur */
+        box-shadow: 0 6px 20px rgba(0, 47, 167, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12);
+        cursor: pointer;
+        /* Sort légèrement du bord haut de la barre */
+        align-self: center;
+        margin-bottom: 10px;
+        transition: transform 0.14s, box-shadow 0.14s;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .bottom-nav-fab:active {
+        transform: scale(0.91);
+        box-shadow: 0 3px 10px rgba(0, 47, 167, 0.30);
+    }
+
+    .bottom-nav-fab svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2;
+        stroke: #fff;
+        fill: none;
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS PAGE — sections en cards
+   ═══════════════════════════════════════════════════════════════ */
+
+.settings-layout {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Card de base — reprend le style .profile-card */
+.settings-card {
+    background: var(--card-bg);
+    padding: 1.75rem 2rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.settings-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem;
+}
+
+.settings-card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.25rem;
+    line-height: 1.5;
+}
+
+.settings-current-email {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+/* Sous-section à l'intérieur d'une card (email, mot de passe) */
+.settings-subsection {
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-subsection-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.9rem;
+}
+
+/* Variante danger */
+.settings-card--danger {
+    border-color: rgba(220, 38, 38, 0.3);
+    background: rgba(220, 38, 38, 0.03);
+}
+
+.settings-card-title--danger {
+    color: #dc2626;
+}
+
+/* Responsive : réduire le padding sur petits écrans */
+@media (max-width: 600px) {
+    .settings-card {
+        padding: 1.25rem 1rem;
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MESSAGES — Reply & Réactions emoji
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Aperçu du message cité (dans la bulle) ────────────────────── */
+.message-reply-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--bg-tertiary, rgba(0,0,0,0.05));
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    margin-bottom: 0.4rem;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.message-reply-author {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-reply-excerpt {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Chips de réactions sous la bulle ──────────────────────────── */
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 0.35rem;
+}
+
+.reaction-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.reaction-chip:hover {
+    border-color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.06);
+}
+
+.reaction-chip--mine {
+    border-color: var(--accent-blue);
+    background: rgba(0, 47, 167, 0.1);
+    font-weight: 600;
+}
+
+/* ── Barre d'actions (Répondre + emoji) ────────────────────────── */
+.message-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.3rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+/* Visible au survol du message ou si le picker est ouvert */
+.message-item:hover .message-actions-bar,
+.message-actions-bar:focus-within {
+    opacity: 1;
+}
+
+.message-action-btn {
+    background: none;
+    border: none;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.message-action-btn:hover {
+    background: var(--sidebar-hover);
+    color: var(--text-primary);
+}
+
+/* ── Popup emoji picker ─────────────────────────────────────────── */
+.emoji-picker-wrap {
+    position: relative;
+}
+
+.emoji-picker-popup {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 6px 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
+    z-index: 50;
+    white-space: nowrap;
+}
+
+.emoji-option {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.emoji-option:hover {
+    transform: scale(1.25);
+}
+
+/* ── Barre de reply dans la zone de composition ─────────────────── */
+.compose-reply-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-tertiary, rgba(0,0,0,0.04));
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 6px 6px 0 0;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: -1px; /* colle au textarea */
+}
+
+.compose-reply-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.compose-reply-label {
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    font-weight: 500;
+}
+
+.compose-reply-excerpt {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compose-reply-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.12s;
+}
+
+.compose-reply-close:hover {
+    color: var(--text-primary);
+}
+
+/* Sur mobile : actions toujours visibles (pas de hover) */
+@media (max-width: 768px) {
+    .message-actions-bar {
+        opacity: 1;
+    }
+}
+
+
+/* ================================================================
+   AGORA — REDESIGN MOBILE-FIRST
+   Mockup : feed vertical centré, cards blanches, couverture pleine
+   ================================================================ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+/* Background géré par agora.css — utilise le fond app (--bg-primary) */
+.agora-page {
+    background: transparent;
+    min-height: 100%;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.agora-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 0.75rem;
+    color: var(--text-tertiary);
+    text-align: center;
+    padding: 2rem;
+}
+.agora-empty-icon { font-size: 3rem; line-height: 1; }
+.agora-empty h3   { margin: 0; font-size: 1.1rem; color: var(--text-secondary); }
+.agora-empty p    { margin: 0; font-size: 0.9rem; }
+
+/* ── Feed container ───────────────────────────────────────── */
+.agora-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem;
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.agora-card {
+    background: var(--agora-card);
+    border-radius: var(--agora-radius);
+    box-shadow: var(--agora-shadow);
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem 1rem 0.65rem;
+    overflow: hidden;
+}
+
+/* ── En-tête ─────────────────────────────────────────────── */
+.agora-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.agora-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 40px;
+    display: block;
+    border: 1.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.agora-user-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.agora-user-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    justify-content: space-between;
+}
+
+.agora-username {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    line-height: 1.3;
+    flex-shrink: 0;
+}
+.agora-username:hover { text-decoration: underline; }
+
+.agora-sub-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem;
+    line-height: 1.3;
+}
+
+.agora-handle {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.agora-activity-line {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    line-height: 1.3;
+}
+
+.agora-activity-link {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-style: italic;
+    cursor: pointer;
+}
+.agora-activity-link:hover { text-decoration: underline; }
+
+.agora-time {
+    font-size: 0.72rem;
+    color: var(--text-tertiary);
+    line-height: 1;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.agora-menu-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: background 0.14s, color 0.14s;
+}
+.agora-menu-btn svg { width: 18px; height: 18px; }
+.agora-menu-btn:hover {
+    background: var(--surface-raised);
+    color: var(--danger-text);
+}
+
+/* ── Couverture pleine largeur ────────────────────────────── */
+.agora-cover-wrap {
+    margin: 0 -1rem;
+    overflow: hidden;
+}
+
+.agora-cover {
+    width: 100%;
+    height: 280px;
+    display: block;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+}
+
+/* ── Texte / légende ──────────────────────────────────────── */
+.agora-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.agora-content {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.agora-content--clamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+}
+
+.agora-expand-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: color 0.12s;
+}
+.agora-expand-btn:hover { color: var(--accent-blue); }
+
+/* ── Barre d'actions ──────────────────────────────────────── */
+.agora-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.agora-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.25rem 0.1rem;
+    text-decoration: none;
+    transition: color 0.14s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+}
+.agora-action svg { width: 20px; height: 20px; stroke-width: 1.75; }
+
+.agora-action:hover:not(:disabled) { color: var(--text-primary); }
+.agora-action:disabled { opacity: 0.45; cursor: default; }
+
+.agora-action--liked { color: var(--agora-action-liked); }
+.agora-action--liked svg { fill: var(--agora-action-liked); }
+.agora-action--liked:hover:not(:disabled) { color: var(--agora-action-liked); }
+
+.agora-action--active { color: var(--agora-action-active); }
+
+.agora-action--bookmark {
+    margin-left: auto;       /* pousse le bookmark à droite */
+}
+
+/* ── Section commentaires (hérite des styles existants) ───── */
+.agora-comments-section {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding-top: 0.6rem;
+    margin-top: -0.1rem;
+}
+
+
+/* ================================================================
+   BOTTOM NAV — FAB Klein Blue
+   ================================================================ */
+@media (max-width: 768px) {
+
+    .bottom-nav {
+        align-items: center;
+        justify-content: space-around;
+        height: calc(64px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Liens latéraux */
+    .bottom-nav-link {
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        color: var(--text-tertiary);
+        text-decoration: none;
+        padding: 0.5rem 0;
+        transition: color 0.15s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .bottom-nav-link svg { width: 22px; height: 22px; stroke-width: 1.75; }
+    .bottom-nav-link span { font-size: 0.6rem; font-weight: 500; letter-spacing: 0.02em; }
+    .bottom-nav-link.active { color: var(--accent-blue); }
+
+    /* Barre active */
+    .bottom-nav-link.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 2px;
+        background: var(--accent-blue);
+        border-radius: 0 0 3px 3px;
+    }
+
+    /* FAB central – Klein Blue */
+    .bottom-nav-fab {
+        flex-shrink: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        box-shadow: 0 4px 18px rgba(0, 47, 167, 0.40);
+        transform: translateY(-10px);         /* flotte au-dessus de la barre */
+        transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        z-index: 1;
+    }
+    .bottom-nav-fab svg { width: 24px; height: 24px; stroke-width: 1.75; }
+    .bottom-nav-fab:hover {
+        background: var(--accent-blue-light);
+        transform: translateY(-12px);
+        box-shadow: 0 6px 22px rgba(0, 47, 167, 0.50);
+    }
+    .bottom-nav-fab:active {
+        transform: translateY(-8px);
+        box-shadow: 0 3px 12px rgba(0, 47, 167, 0.35);
+    }
+}

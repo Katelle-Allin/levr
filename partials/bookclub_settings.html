@@ -1,0 +1,263 @@
+<div class="page-content">
+
+    <div class="page-back">
+        <button class="btn-link" ng-click="goBack()">← Retour au bookclub</button>
+    </div>
+
+    <!-- Chargement -->
+    <div ng-if="loading" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <div ng-if="!loading">
+
+        <h2 style="margin-bottom: 1.5rem;">Paramètres du bookclub</h2>
+
+        <!-- Alertes -->
+        <div ng-if="error"   class="alert alert-error">{{ error }}</div>
+        <div ng-if="success" class="alert alert-success">{{ success }}</div>
+
+        <!-- ── Informations ─────────────────────────────────────────────── -->
+        <div class="profile-card" style="margin-bottom: 1.5rem;">
+
+            <h3 class="section-title">Informations</h3>
+
+            <div class="form-group">
+                <label>Nom <span class="required">*</span></label>
+                <input type="text" class="form-control"
+                       ng-model="form.name"
+                       placeholder="Nom du bookclub"
+                       maxlength="80">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control"
+                          ng-model="form.description"
+                          placeholder="Décrivez votre bookclub..."
+                          rows="4" maxlength="400"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Visibilité</label>
+                <div class="club-visibility-options">
+                    <div class="club-visibility-option"
+                         ng-class="{'club-visibility-option--active': form.isPublic}"
+                         ng-click="form.isPublic = true">
+                        <i class="club-visibility-icon" data-lucide="globe"></i>
+                        <div class="club-visibility-text">
+                            <strong>Public</strong>
+                            <span>Tout le monde peut rejoindre</span>
+                        </div>
+                    </div>
+                    <div class="club-visibility-option"
+                         ng-class="{'club-visibility-option--active': !form.isPublic}"
+                         ng-click="form.isPublic = false">
+                        <i class="club-visibility-icon" data-lucide="lock"></i>
+                        <div class="club-visibility-text">
+                            <strong>Privé</strong>
+                            <span>Sur invitation uniquement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary"
+                    ng-click="saveChanges()"
+                    ng-disabled="saving || !form.name">
+                <span ng-if="!saving">Enregistrer les modifications</span>
+                <span ng-if="saving">Enregistrement...</span>
+            </button>
+
+        </div>
+
+        <!-- ── Photo du club ───────────────────────────────────────────── -->
+        <div class="profile-card" style="margin-bottom: 1.5rem;">
+
+            <h3 class="section-title">Photo du club</h3>
+
+            <div ng-if="avatarError"   class="alert alert-error"   style="margin-bottom: 0.75rem;">{{ avatarError }}</div>
+            <div ng-if="avatarSuccess" class="alert alert-success" style="margin-bottom: 0.75rem;">{{ avatarSuccess }}</div>
+
+            <div class="bc-avatar-settings-row">
+
+                <!-- Aperçu actuel -->
+                <div class="bc-avatar-preview">
+                    <img ng-if="club.logo_url && !avatarUploading"
+                         class="bc-avatar-preview-img"
+                         ng-src="{{ club.logo_url }}"
+                         alt="{{ club.name }}">
+                    <div ng-if="!club.logo_url && !avatarUploading"
+                         class="bc-avatar-preview-placeholder">
+                        {{ club.name ? club.name[0].toUpperCase() : '?' }}
+                    </div>
+                    <div ng-if="avatarUploading"
+                         class="bc-avatar-preview-placeholder">
+                        <div class="spinner spinner--sm"></div>
+                    </div>
+                </div>
+
+                <!-- Bouton + aide -->
+                <div class="bc-avatar-actions">
+                    <!-- Input caché — déclenché par triggerAvatarInput() -->
+                    <input type="file" id="bc-settings-avatar-input"
+                           accept="image/png,image/jpeg,image/webp"
+                           style="display:none"
+                           onchange="angular.element(this).scope().onAvatarChange(this.files)">
+
+                    <button class="btn btn-secondary"
+                            ng-click="triggerAvatarInput()"
+                            ng-disabled="avatarUploading">
+                        <i data-lucide="upload"></i>
+                        <span ng-if="!avatarUploading">Changer la photo</span>
+                        <span ng-if="avatarUploading">Upload en cours…</span>
+                    </button>
+                    <p class="bc-avatar-hint">JPG, PNG ou WebP · max 2 Mo</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ── Lecture en cours ────────────────────────────────────────── -->
+        <div class="profile-card" style="margin-bottom: 1.5rem;">
+
+            <h3 class="section-title">Lecture en cours</h3>
+
+            <div ng-if="readingError"   class="alert alert-error"   style="margin-bottom: 0.75rem;">{{ readingError }}</div>
+            <div ng-if="readingSuccess" class="alert alert-success" style="margin-bottom: 0.75rem;">{{ readingSuccess }}</div>
+
+            <!-- Livre sélectionné -->
+            <div ng-if="selectedBook" class="bc-picker-selected">
+                <img ng-if="selectedBook.cover_url"
+                     class="bc-picker-cover"
+                     ng-src="{{ selectedBook.cover_url }}"
+                     alt="{{ selectedBook.title }}">
+                <div ng-if="!selectedBook.cover_url" class="bc-picker-cover bc-picker-cover-ph">📖</div>
+                <div class="bc-picker-selected-info">
+                    <div class="bc-picker-selected-title">{{ selectedBook.title }}</div>
+                    <div ng-if="selectedBook.author" class="bc-picker-selected-author">{{ selectedBook.author }}</div>
+                    <span ng-if="selectedBook.shelf" class="bc-picker-shelf-badge bc-picker-shelf-badge--{{ selectedBook.shelf | lowercase }}">
+                        {{ shelfLabel(selectedBook.shelf) }}
+                    </span>
+                </div>
+                <button class="btn btn-ghost btn-sm"
+                        ng-click="clearSelectedBook()"
+                        title="Changer de livre">
+                    Changer
+                </button>
+            </div>
+
+            <!-- Picker bibliothèque -->
+            <div ng-if="!selectedBook">
+                <div ng-if="libraryLoading" class="bc-lib-loading">
+                    <div class="spinner spinner--sm"></div>
+                    <span>Chargement de votre bibliothèque…</span>
+                </div>
+
+                <div ng-if="!libraryLoading && libraryError" class="alert alert-error">{{ libraryError }}</div>
+
+                <div ng-if="!libraryLoading && !libraryError && libraryBooks.length === 0" class="bc-lib-empty">
+                    <p>Votre bibliothèque est vide.</p>
+                    <a href="#!/search" class="btn btn-secondary btn-sm">Ajouter des livres</a>
+                </div>
+
+                <div ng-if="!libraryLoading && libraryBooks.length > 0">
+                    <button class="btn btn-secondary btn-sm"
+                            ng-if="!showLibraryPicker"
+                            ng-click="toggleLibraryPicker()">
+                        <i data-lucide="book"></i> Choisir dans ma bibliothèque
+                    </button>
+
+                    <div ng-if="showLibraryPicker" class="bc-library-picker">
+                        <div class="bc-picker-search-row">
+                            <input type="text"
+                                   class="form-control"
+                                   ng-model="libraryFilter"
+                                   ng-change="filterLibrary()"
+                                   placeholder="Filtrer par titre ou auteur…"
+                                   autofocus>
+                            <button class="btn btn-ghost btn-sm" ng-click="toggleLibraryPicker()">Annuler</button>
+                        </div>
+
+                        <div class="bc-picker-list">
+                            <div ng-if="filteredLibrary.length === 0" class="bc-picker-empty">
+                                Aucun résultat.
+                            </div>
+                            <div ng-repeat="book in filteredLibrary"
+                                 class="bc-picker-item"
+                                 ng-click="pickBook(book)">
+                                <img ng-if="book.cover_url"
+                                     class="bc-picker-item-cover"
+                                     ng-src="{{ book.cover_url }}"
+                                     alt="{{ book.title }}">
+                                <div ng-if="!book.cover_url" class="bc-picker-item-cover bc-picker-item-cover-ph">📖</div>
+                                <div class="bc-picker-item-info">
+                                    <div class="bc-picker-item-title">{{ book.title }}</div>
+                                    <div ng-if="book.author" class="bc-picker-item-author">{{ book.author }}</div>
+                                </div>
+                                <span ng-if="book.shelf" class="bc-picker-shelf-badge bc-picker-shelf-badge--{{ book.shelf | lowercase }}">
+                                    {{ shelfLabel(book.shelf) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progression (optionnel) -->
+            <div ng-if="selectedBook" class="bc-chapter-row">
+                <div class="form-group">
+                    <label style="font-size: 0.82rem; color: var(--text-secondary);">
+                        Chapitre en cours <span style="color: var(--text-tertiary);">(optionnel)</span>
+                    </label>
+                    <input type="number" class="form-control" min="1"
+                           ng-model="chapterForm.number"
+                           placeholder="ex : 5">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.82rem; color: var(--text-secondary);">
+                        Total chapitres <span style="color: var(--text-tertiary);">(optionnel)</span>
+                    </label>
+                    <input type="number" class="form-control" min="1"
+                           ng-model="chapterForm.total"
+                           placeholder="ex : 20">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="bc-reading-settings-actions" ng-if="selectedBook || club.current_book_id">
+                <button class="btn btn-primary"
+                        ng-click="saveReading()"
+                        ng-disabled="readingSaving || !selectedBook">
+                    <span ng-if="!readingSaving">Enregistrer la lecture</span>
+                    <span ng-if="readingSaving">Enregistrement…</span>
+                </button>
+                <button class="btn btn-ghost"
+                        ng-if="club.current_book_id"
+                        ng-click="clearReading()"
+                        ng-disabled="readingSaving">
+                    Retirer
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ── Zone de danger ─────────────────────────────────────────── -->
+        <div class="profile-card club-danger-zone">
+            <h3 class="section-title club-danger-title">Zone de danger</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                La suppression du bookclub est définitive. Toutes les discussions et tous les
+                messages associés seront perdus.
+            </p>
+            <button class="btn btn-danger"
+                    ng-click="confirmDelete()"
+                    ng-disabled="deleting">
+                <span ng-if="!deleting">Supprimer le bookclub</span>
+                <span ng-if="deleting">Suppression...</span>
+            </button>
+        </div>
+
+    </div>
+
+</div>

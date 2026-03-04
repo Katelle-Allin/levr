@@ -1,0 +1,285 @@
+<div class="container">
+    <div class="page-header">
+        <h2>Mon profil</h2>
+        <p>Gérez vos informations personnelles et vos préférences</p>
+    </div>
+
+    <!-- Messages d'erreur et de succès -->
+    <div ng-if="error" class="alert alert-error">
+        {{ error }}
+    </div>
+    <div ng-if="success" class="alert alert-success">
+        {{ success }}
+    </div>
+
+    <!-- État de chargement -->
+    <div ng-if="loading" class="loading">
+        Chargement de votre profil...
+    </div>
+
+    <!-- Profil chargé -->
+    <div ng-if="!loading && profile" class="profile-container">
+        
+        <!-- Section Avatar -->
+        <div class="profile-avatar-section">
+            <div class="avatar-wrapper">
+                <img ng-src="{{ avatarPreview || profile.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}" 
+                     alt="Avatar" 
+                     class="profile-avatar-large">
+                <div ng-if="uploadingAvatar" class="avatar-loading">Upload...</div>
+            </div>
+            <input type="file" 
+                   id="avatar-upload" 
+                   accept="image/png,image/jpeg,image/jpg" 
+                   style="display:none"
+                   onchange="angular.element(this).scope().handleAvatarUpload(event)">
+            <button type="button" class="btn btn-secondary" ng-click="triggerFileInput()" ng-disabled="uploadingAvatar">
+                <span ng-if="!uploadingAvatar">Changer la photo</span>
+                <span ng-if="uploadingAvatar">Upload en cours...</span>
+            </button>
+            <p class="avatar-hint">PNG ou JPG, max 2MB</p>
+        </div>
+
+        <!-- Formulaire de profil (mode lecture) -->
+        <div ng-if="!editMode" class="profile-card">
+            <div class="profile-header-actions">
+                <a href="#!/library" class="btn btn-secondary">📚 Ma bibliothèque</a>
+                <button type="button" class="btn btn-primary" ng-click="enableEdit()">
+                    Modifier le profil
+                </button>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Nom d'utilisateur</label>
+                <p class="profile-info-value">{{ profile.username }}</p>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Email</label>
+                <p class="profile-info-value">{{ profile.email }}</p>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Bio</label>
+                <p class="profile-info-value">{{ profile.bio || 'Aucune bio' }}</p>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Genres littéraires préférés</label>
+                <div class="user-genres">
+                    <span class="genre-tag" ng-repeat="genre in profile.favorite_genres">
+                        {{ genre }}
+                    </span>
+                    <span ng-if="!profile.favorite_genres || profile.favorite_genres.length === 0" class="profile-info-value">
+                        Aucun genre sélectionné
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Visibilité du profil</label>
+                <p class="profile-info-value">
+                    <span ng-if="profile.is_public">🌍 Profil public</span>
+                    <span ng-if="!profile.is_public">🔒 Profil privé</span>
+                </p>
+            </div>
+
+            <div class="profile-info-group">
+                <label>Statistiques</label>
+                <div class="profile-social-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ profile.followers_count || 0 }}</span>
+                        <span class="stat-label">Abonnés</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ profile.following_count || 0 }}</span>
+                        <span class="stat-label">Abonnements</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de profil (mode édition) -->
+        <div ng-if="editMode" class="profile-card">
+            <form ng-submit="saveProfile()" name="profileForm">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur *</label>
+                    <input type="text" 
+                           id="username" 
+                           class="form-control" 
+                           ng-model="editedProfile.username"
+                           minlength="3"
+                           maxlength="20"
+                           required>
+                    <p class="form-hint">Entre 3 et 20 caractères</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" 
+                              class="form-control" 
+                              ng-model="editedProfile.bio"
+                              maxlength="280"
+                              rows="4"
+                              placeholder="Parlez-nous de vous..."></textarea>
+                    <p class="form-hint">{{ editedProfile.bio.length }} / 280 caractères</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Genres littéraires préférés (max 5)</label>
+                    <div class="genres-grid">
+                        <div class="genre-item" ng-repeat="genre in availableGenres">
+                            <input type="checkbox" 
+                                   id="edit-genre-{{ $index }}"
+                                   ng-checked="isGenreSelected(genre)"
+                                   ng-click="toggleGenre(genre)">
+                            <label for="edit-genre-{{ $index }}" class="genre-label">
+                                {{ genre }}
+                            </label>
+                        </div>
+                    </div>
+                    <p class="genre-count">
+                        {{ editedProfile.favorite_genres.length }} / 5 sélectionné(s)
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" 
+                               ng-model="editedProfile.is_public"
+                               class="toggle-input">
+                        <span class="toggle-switch"></span>
+                        <span class="toggle-text">Profil public (visible par tous)</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" ng-click="cancelEdit()" ng-disabled="saving">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-block" ng-disabled="saving || profileForm.$invalid">
+                        <span ng-if="!saving">Enregistrer</span>
+                        <span ng-if="saving">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Statistiques de lecture -->
+        <div ng-if="stats" class="stats-card">
+            <h3>Statistiques de lecture</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value">{{ stats.lu }}</div>
+                    <div class="stat-label">Livres lus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📖</div>
+                    <div class="stat-value">{{ stats.en_cours }}</div>
+                    <div class="stat-label">En cours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">{{ stats.a_lire }}</div>
+                    <div class="stat-label">À lire</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-value">{{ stats.total_pages }}</div>
+                    <div class="stat-label">Pages lues</div>
+                </div>
+            </div>
+            <div ng-if="stats.genre_favori" class="favorite-genre">
+                <strong>Genre le plus fréquent :</strong> {{ stats.genre_favori }}
+            </div>
+        </div>
+
+        <!-- Mes posts -->
+        <div class="stats-card my-posts-section">
+            <div class="section-header">
+                <h3>Mes posts</h3>
+                <span class="post-count-badge" ng-if="myPosts.length > 0">{{ myPosts.length }}</span>
+            </div>
+
+            <!-- Encart "Commencer un post" -->
+            <div class="create-post-card" ng-click="openNewPostModal()">
+                <img class="create-post-avatar"
+                     ng-src="{{ profile.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                     alt="Mon avatar">
+                <div class="create-post-input">Commencer un post…</div>
+                <button class="btn btn-primary create-post-btn"
+                        ng-click="$event.stopPropagation(); openNewPostModal()">
+                    ✏️ Créer un post
+                </button>
+            </div>
+
+            <div ng-if="postsLoading" class="loading" style="padding: 1.5rem 0;">
+                Chargement des posts...
+            </div>
+
+            <div ng-if="!postsLoading && myPosts.length === 0" class="feed-empty feed-empty-inline">
+                <p>Tu n'as pas encore publié de post.</p>
+            </div>
+
+            <div class="feed feed-inline" ng-if="!postsLoading && myPosts.length > 0">
+                <div class="post-card" ng-repeat="post in myPosts track by post.id">
+
+                    <!-- En-tête -->
+                    <div class="post-header">
+                        <img class="post-avatar"
+                             ng-src="{{ post.LEVR_users.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                             alt="{{ post.LEVR_users.username }}">
+                        <div class="post-meta">
+                            <div class="post-meta-line">
+                                <span class="post-author">{{ post.LEVR_users.username }}</span>
+                                <span class="post-activity" ng-if="post._activity">
+                                    {{ post._activity.prefix }}
+                                    <a class="post-activity-link"
+                                       ng-if="post._activity.book"
+                                       ng-click="goToBook(post)">&#171;&nbsp;{{ post._activity.book.title }}&nbsp;&#187;</a><span
+                                       ng-if="!post._activity.book">ce livre</span><span
+                                       ng-if="post._activity.suffix">&nbsp;{{ post._activity.suffix }}</span>
+                                </span>
+                            </div>
+                            <span class="post-time">{{ formatTime(post.created_at) }}</span>
+                        </div>
+                        <!-- Bouton supprimer -->
+                        <button class="action-btn action-btn--danger post-delete-btn"
+                                ng-click="deleteMyPost(post)"
+                                title="Supprimer ce post">
+                            🗑
+                        </button>
+                    </div>
+
+                    <!-- Corps : image (gauche) + texte (droite) -->
+                    <div class="post-body">
+                        <div class="post-media" ng-if="post.image_url">
+                            <img class="post-image" ng-src="{{ post.image_url }}" alt="Image du post">
+                        </div>
+                        <div class="post-text" ng-if="post.content">
+                            <p class="post-content" ng-class="{'post-content--clamped': needsExpand(post) && !post.expanded}">{{ post.content }}</p>
+                            <button class="post-expand-btn"
+                                    ng-if="needsExpand(post)"
+                                    ng-click="toggleExpand(post)">
+                                {{ post.expanded ? 'Lire moins ▲' : 'Lire plus ▼' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats (likes + commentaires, lecture seule) -->
+                    <div class="post-actions post-actions--readonly">
+                        <span class="action-btn action-btn--liked" ng-if="post.likes_count > 0">
+                            ❤️ <span class="action-count">{{ post.likes_count }}</span>
+                        </span>
+                        <span class="action-btn" ng-if="post.comments_count > 0">
+                            💬 <span class="action-count">{{ post.comments_count }}</span>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

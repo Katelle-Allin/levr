@@ -1,0 +1,147 @@
+<div class="container">
+    <!-- Messages d'erreur -->
+    <div ng-if="error" class="alert alert-error">
+        {{ error }}
+    </div>
+
+    <!-- État de chargement -->
+    <div ng-if="loading" class="loading">
+        Chargement du profil...
+    </div>
+
+    <!-- Profil privé -->
+    <div ng-if="!loading && isPrivate" class="private-profile">
+        <div class="private-profile-icon">🔒</div>
+        <h3>Profil privé</h3>
+        <p>Ce profil est privé. Seul le propriétaire peut voir ses informations.</p>
+    </div>
+
+    <!-- Profil public chargé -->
+    <div ng-if="!loading && !isPrivate && profile" class="profile-public-container">
+        
+        <!-- En-tête du profil -->
+        <div class="profile-public-header">
+            <div class="profile-avatar-wrapper">
+                <img ng-src="{{ profile.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}" 
+                     alt="{{ profile.username }}" 
+                     class="profile-avatar-large">
+            </div>
+
+            <div class="profile-public-info">
+                <h2>{{ profile.username }}</h2>
+                
+                <div class="profile-social-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ profile.followers_count || 0 }}</span>
+                        <span class="stat-label">Abonnés</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ profile.following_count || 0 }}</span>
+                        <span class="stat-label">Abonnements</span>
+                    </div>
+                </div>
+
+                <!-- Bouton Suivre / Se désabonner -->
+                <div ng-if="!isOwnProfile && currentUser" class="follow-actions">
+                    <button ng-if="!isFollowing" 
+                            type="button" 
+                            class="btn btn-primary"
+                            ng-click="follow()"
+                            ng-disabled="followLoading">
+                        <span ng-if="!followLoading">Suivre</span>
+                        <span ng-if="followLoading">...</span>
+                    </button>
+                    <button ng-if="isFollowing" 
+                            type="button" 
+                            class="btn btn-secondary"
+                            ng-click="unfollow()"
+                            ng-disabled="followLoading">
+                        <span ng-if="!followLoading">Se désabonner</span>
+                        <span ng-if="followLoading">...</span>
+                    </button>
+                </div>
+
+                <!-- Bouton Modifier si c'est son propre profil -->
+                <div ng-if="isOwnProfile" class="follow-actions">
+                    <a href="#!/profile/me" class="btn btn-primary">Modifier mon profil</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio -->
+        <div ng-if="profile.bio" class="profile-bio">
+            <p>{{ profile.bio }}</p>
+        </div>
+
+        <!-- Genres préférés -->
+        <div ng-if="profile.favorite_genres && profile.favorite_genres.length > 0" class="profile-section">
+            <h3>Genres préférés</h3>
+            <div class="user-genres">
+                <span class="genre-tag" ng-repeat="genre in profile.favorite_genres">
+                    {{ genre }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Statistiques de lecture -->
+        <div ng-if="stats" class="stats-card">
+            <h3>Statistiques de lecture</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value">{{ stats.lu }}</div>
+                    <div class="stat-label">Livres lus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📖</div>
+                    <div class="stat-value">{{ stats.en_cours }}</div>
+                    <div class="stat-label">En cours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">{{ stats.a_lire }}</div>
+                    <div class="stat-label">À lire</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-value">{{ stats.total_pages }}</div>
+                    <div class="stat-label">Pages lues</div>
+                </div>
+            </div>
+            <div ng-if="stats.genre_favori" class="favorite-genre">
+                <strong>Genre le plus fréquent :</strong> {{ stats.genre_favori }}
+            </div>
+        </div>
+
+        <!-- Posts de l'utilisateur -->
+        <div class="profile-section">
+            <h3>Posts</h3>
+
+            <div ng-if="postsLoading" class="loading" style="padding:1.5rem 0;">
+                Chargement des posts...
+            </div>
+
+            <div ng-if="!postsLoading && posts.length === 0" class="feed-empty feed-empty-inline">
+                <p>Aucun post pour le moment.</p>
+            </div>
+
+            <div class="feed feed-inline" ng-if="!postsLoading && posts.length > 0">
+                <div class="post-card" ng-repeat="post in posts track by post.id">
+                    <div class="post-header">
+                        <img class="post-avatar"
+                             ng-src="{{ post.LEVR_users.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                             alt="{{ post.LEVR_users.username }}">
+                        <div class="post-meta">
+                            <span class="post-author">{{ post.LEVR_users.username }}</span>
+                            <span class="post-time">{{ formatTime(post.created_at) }}</span>
+                        </div>
+                    </div>
+                    <p class="post-content">{{ post.content }}</p>
+                    <div class="post-image-wrap" ng-if="post.image_url">
+                        <img class="post-image" ng-src="{{ post.image_url }}" alt="Image du post">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

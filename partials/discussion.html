@@ -1,0 +1,141 @@
+<div class="discussion-page">
+
+    <!-- Chargement -->
+    <div ng-if="loading" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Erreur fatale -->
+    <div ng-if="error && !loading" class="alert alert-error" style="margin: 1rem;">
+        {{ error }}
+        <br>
+        <button class="btn-link" ng-click="goBack()" style="margin-top: 0.5rem; display:inline-block;">
+            ← Retour au bookclub
+        </button>
+    </div>
+
+    <!-- Contenu -->
+    <div ng-if="!loading && !error" class="discussion-container">
+
+        <!-- ── En-tête sticky ──────────────────────────────────────────── -->
+        <div class="discussion-header">
+            <button class="btn-link discussion-back-btn" ng-click="goBack()" title="Retour">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="discussion-header-info">
+                <div class="discussion-header-club" ng-if="club">{{ club.name }}</div>
+                <div class="discussion-title">{{ discussion ? discussion.title : 'Discussion' }}</div>
+            </div>
+        </div>
+
+        <!-- ── Fil de messages ─────────────────────────────────────────── -->
+        <div class="message-list" ng-click="closeAllPickers()">
+
+            <div ng-if="messages.length === 0" class="club-empty-state" style="padding: 3rem 1rem;">
+                <p>Aucun message. Soyez le premier à écrire !</p>
+            </div>
+
+            <div class="message-item"
+                 ng-repeat="msg in messages track by msg.id"
+                 ng-class="{'message-item--mine': currentUser && msg.sender_id === currentUser.id}">
+
+                <!-- Avatar -->
+                <img class="message-avatar"
+                     ng-if="msg.user && msg.user.profile_picture"
+                     ng-src="{{ msg.user.profile_picture }}"
+                     alt="{{ msg.user.username }}">
+                <div class="message-avatar message-avatar--placeholder"
+                     ng-if="!msg.user || !msg.user.profile_picture">
+                    {{ (msg.user && msg.user.username) ? msg.user.username[0].toUpperCase() : '?' }}
+                </div>
+
+                <div class="message-bubble-wrap">
+                    <div class="message-meta">
+                        <span class="message-author">{{ msg.user ? msg.user.username : '—' }}</span>
+                        <span class="message-time">{{ formatDate(msg.created_at) }}</span>
+                    </div>
+
+                    <!-- Citation (reply) -->
+                    <div class="message-reply-preview" ng-if="msg.reply_to_message_id">
+                        <span class="message-reply-author">↩ {{ msg.reply_to_username || '—' }}</span>
+                        <span class="message-reply-excerpt">{{ msg.reply_to_excerpt }}</span>
+                    </div>
+
+                    <div class="message-bubble">{{ msg.content }}</div>
+
+                    <!-- Réactions -->
+                    <div class="reaction-row" ng-if="hasReactions(msg)">
+                        <button class="reaction-chip"
+                                ng-repeat="r in getReactionEntries(msg) track by r.emoji"
+                                ng-class="{'reaction-chip--mine': r.mine}"
+                                ng-click="toggleReaction(msg, r.emoji, $event)"
+                                title="{{ r.mine ? 'Retirer ma réaction' : 'Réagir' }}">
+                            {{ r.emoji }}&nbsp;{{ r.count }}
+                        </button>
+                    </div>
+
+                    <!-- Actions (Répondre / Emoji) — cachées, visibles au survol / toujours sur mobile -->
+                    <div class="message-actions-bar" ng-if="isMember()">
+                        <button class="message-action-btn" ng-click="setReply(msg)">
+                            ↩ Répondre
+                        </button>
+                        <div class="emoji-picker-wrap">
+                            <button class="message-action-btn"
+                                    ng-click="toggleEmojiPicker(msg, $event)"
+                                    title="Réagir">
+                                😊
+                            </button>
+                            <div class="emoji-picker-popup" ng-if="msg._showPicker">
+                                <button class="emoji-option"
+                                        ng-repeat="e in emojis track by e"
+                                        ng-click="toggleReaction(msg, e, $event)">{{ e }}</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /.message-list -->
+
+        <!-- ── Barre de réponse active ────────────────────────────────── -->
+        <div class="compose-reply-bar" ng-if="replyTo && isMember()">
+            <div class="compose-reply-content">
+                <span class="compose-reply-label">↩ Réponse à <strong>{{ replyTo.username }}</strong></span>
+                <span class="compose-reply-excerpt">{{ replyTo.excerpt }}</span>
+            </div>
+            <button class="compose-reply-close" ng-click="clearReply()" title="Annuler">×</button>
+        </div>
+
+        <!-- ── Compose ────────────────────────────────────────────────── -->
+        <div ng-if="isMember()">
+            <!-- Erreur d'envoi (proche du champ, pas en haut de page) -->
+            <div ng-if="messagesError" class="alert alert-error"
+                 style="margin: 0 0.5rem 0.25rem; font-size: 0.85rem; padding: 0.4rem 0.75rem;">
+                {{ messagesError }}
+            </div>
+            <div class="message-input-row">
+                <textarea id="message-compose"
+                          class="message-input"
+                          ng-model="compose.message"
+                          placeholder="Votre message…"
+                          rows="1"
+                          ng-disabled="sendingMessage"
+                          ng-keydown="onComposeKeydown($event)"></textarea>
+                <button class="message-send-btn"
+                        ng-click="submitMessage()"
+                        ng-disabled="sendingMessage || !compose.message || !compose.message.trim()"
+                        title="Envoyer">
+                    <i data-lucide="send" ng-if="!sendingMessage"></i>
+                    <span ng-if="sendingMessage" style="font-size:0.75rem;">…</span>
+                </button>
+            </div>
+        </div>
+
+        <div ng-if="!isMember() && !loading" class="club-empty-state" style="padding: 1rem;">
+            <p>Rejoignez ce bookclub pour participer aux discussions.</p>
+        </div>
+
+    </div><!-- /.discussion-container -->
+
+</div><!-- /.discussion-page -->

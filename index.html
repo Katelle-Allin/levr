@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr" ng-app="levrApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVR - Communauté de lecteurs</title>
+    <script>
+    (function() {
+        var theme = localStorage.getItem('levr_theme') || 'light';
+        document.documentElement.classList.add(theme + '-mode');
+    })();
+</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css?v=5">
+    <link rel="stylesheet" href="css/agora.css?v=1">
+    <!-- Critical agora overrides — inline to bypass any CSS file caching -->
+    <style>
+        /* Feed background: transparent → hérite de --bg-primary
+           Light: #f5f7fa (cool gray)  |  Dark: #0a0a0a  — zéro beige */
+        .agora-page { background: transparent !important; }
+
+        /* Card — light mode: blanc / dark mode: sombre */
+        .agora-card {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.10) !important;
+            border: 1px solid rgba(0,0,0,0.07) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+        body.dark-mode .agora-card {
+            background: #1e1e1e !important;
+            border-color: rgba(255,255,255,0.07) !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Avatar — hard-capped at 40×40, never grows */
+        .agora-avatar {
+            width: 40px !important; height: 40px !important;
+            min-width: 40px !important; max-width: 40px !important;
+            min-height: 40px !important; max-height: 40px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            flex: 0 0 40px !important;
+            display: block !important;
+        }
+
+        /* Cover — fixed height, never portrait-fullscreen */
+        .agora-cover {
+            width: 100% !important;
+            height: 280px !important;
+            display: block !important;
+            object-fit: cover !important;
+        }
+
+        /* Actions — always visible */
+        .agora-actions {
+            display: flex !important;
+            align-items: center !important;
+            min-height: 44px;
+            padding: 0.5rem 0.75rem 0.65rem;
+        }
+        .agora-action {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.3rem;
+            background: none !important;
+            border: none !important;
+            cursor: pointer;
+            color: #555 !important;
+            padding: 0.4rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            text-decoration: none;
+        }
+        .agora-action svg { width: 20px !important; height: 20px !important; flex-shrink: 0; }
+        .agora-action--liked { color: #E8394C !important; }
+        .agora-action--liked svg { fill: #E8394C !important; stroke: #E8394C !important; }
+        .agora-action--bookmark { margin-left: auto; }
+    </style>
+</head>
+<body ng-controller="AppController">
+    <!-- Barre supérieure -->
+    <header class="topbar" ng-if="isAuthenticated">
+        <div class="topbar-left">
+            <span class="topbar-brand">LEVR</span>
+        </div>
+        <div class="topbar-right">
+            <a href="#!/search" class="topbar-icon-btn" title="Recherche">
+                <i data-lucide="search"></i>
+            </a>
+            <div class="user-menu-wrap">
+                <button class="user-menu-trigger" ng-click="toggleUserMenu($event)">
+                    <img class="topbar-avatar"
+                         ng-src="{{ appUser.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                         alt="Avatar">
+                    <i data-lucide="chevron-down"></i>
+                </button>
+                <div class="user-dropdown" ng-if="showUserMenu">
+                    <a class="dropdown-item" href="#!/profile/me" ng-click="showUserMenu=false">
+                        <i data-lucide="user"></i>Mon profil
+                    </a>
+                    <a class="dropdown-item" href="#!/library" ng-click="showUserMenu=false">
+                        <i data-lucide="library"></i>Bibliothèque
+                    </a>
+                    <a class="dropdown-item" href="#!/settings" ng-click="showUserMenu=false">
+                        <i data-lucide="settings"></i>Paramètres
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item dropdown-item--danger" ng-click="logout()">
+                        <i data-lucide="log-out"></i>Quitter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barre de navigation latérale (desktop) -->
+    <nav class="sidebar" ng-controller="SidebarController" ng-if="isAuthenticated">
+        <ul class="sidebar-nav">
+            <li><a href="#!/agora" class="sidebar-link" ng-class="{active: isActive('/agora')}" title="Agora"><i data-lucide="book-open"></i></a></li>
+            <li><a href="#!/bookclubs" class="sidebar-link" ng-class="{active: isActive('/bookclubs')}" title="Bookclubs"><i data-lucide="users"></i></a></li>
+        </ul>
+        <!-- Bouton Session de lecture (poussé en bas) -->
+        <div class="sidebar-session-wrap">
+            <div class="sidebar-session-divider"></div>
+            <button class="sidebar-session-btn" ng-click="openSessionModal()" title="Session de lecture">
+                <i data-lucide="book-marked"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Navigation bas de page (mobile uniquement — mêmes items que la sidebar) -->
+    <nav class="bottom-nav" ng-controller="SidebarController" ng-if="isAuthenticated">
+        <a class="bottom-nav-link" href="#!/agora"
+           ng-class="{active: isActive('/agora')}">
+            <i data-lucide="home"></i>
+            <span>Agora</span>
+        </a>
+        <!-- FAB central : Session de lecture -->
+        <button class="bottom-nav-fab" ng-click="openSessionModal()" title="Session de lecture">
+            <i data-lucide="book-marked"></i>
+        </button>
+        <a class="bottom-nav-link" href="#!/bookclubs"
+           ng-class="{active: isActive('/bookclubs')}">
+            <i data-lucide="message-circle"></i>
+            <span>Clubs</span>
+        </a>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-content" ng-class="{'full-width': !isAuthenticated}">
+        <div ng-view></div>
+    </main>
+
+    <!-- ── Toast stack (notifications non-bloquantes) ── -->
+    <div class="toast-stack" ng-if="$root.toasts.length > 0">
+        <div class="toast"
+             ng-repeat="toast in $root.toasts track by toast.id"
+             ng-class="'toast-' + toast.type">
+
+            <!-- Icône accent (uniquement pour les prompts) -->
+            <div class="toast-icon" ng-if="toast.type === 'prompt'">
+                <span class="toast-icon-dot"></span>
+            </div>
+
+            <div class="toast-body">
+                <!-- Titre structuré (nouveau) ou message plat (fallback) -->
+                <p class="toast-title" ng-if="toast.title">{{ toast.title }}</p>
+                <p class="toast-subtitle" ng-if="toast.subtitle">{{ toast.subtitle }}</p>
+                <p class="toast-message" ng-if="!toast.title && toast.message">{{ toast.message }}</p>
+
+                <div class="toast-actions" ng-if="toast.actions">
+                    <button class="toast-btn"
+                            ng-repeat="action in toast.actions"
+                            ng-class="{ 'toast-btn-primary': action.primary }"
+                            ng-click="handleToastAction(toast, action)">
+                        {{ action.label }}
+                    </button>
+                </div>
+            </div>
+
+            <button class="toast-dismiss" ng-click="dismissToast(toast.id)" aria-label="Fermer">×</button>
+        </div>
+    </div>
+
+    <!-- ── Modale de création de post ── -->
+    <div class="modal-overlay post-create-overlay"
+         ng-if="$root.postModal.show"
+         ng-click="closePostModal()">
+        <div class="modal-content post-create-modal"
+             ng-click="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-activity-badge">Nouvelle activité</span>
+                    <h3 class="modal-title">Créer un post</h3>
+                </div>
+                <button class="modal-close" ng-click="closePostModal()" aria-label="Fermer">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Erreur -->
+                <div ng-if="$root.postModal.error" class="alert alert-error">
+                    {{ $root.postModal.error }}
+                </div>
+
+                <!-- Aperçu image -->
+                <div class="post-image-preview" ng-if="$root.postModal.previewUrl">
+                    <img ng-src="{{ $root.postModal.previewUrl }}" alt="Aperçu">
+                    <div class="post-image-overlay">
+                        <button class="post-image-change" ng-click="triggerPostImageInput()">
+                            Changer l'image
+                        </button>
+                    </div>
+                </div>
+                <div class="post-image-empty" ng-if="!$root.postModal.previewUrl"
+                     ng-click="triggerPostImageInput()">
+                    <span class="post-image-empty-icon">🖼</span>
+                    <span>Ajouter une image</span>
+                </div>
+
+                <!-- File input caché -->
+                <input type="file"
+                       id="post-image-file-input"
+                       accept="image/*"
+                       style="display:none"
+                       onchange="angular.element(this).scope().handlePostImageFile(this)">
+
+                <!-- Texte du post -->
+                <textarea class="post-textarea"
+                          ng-model="$root.postModal.content"
+                          placeholder="Partagez votre ressenti sur ce livre..."
+                          maxlength="500"
+                          rows="4"></textarea>
+                <div class="post-char-counter"
+                     ng-class="{ 'post-char-counter--warn': ($root.postModal.content || '').length > 450 }">
+                    {{ ($root.postModal.content || '').length }} / 500
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" ng-click="closePostModal()">
+                    Annuler
+                </button>
+                <button class="btn btn-publish"
+                        ng-click="submitPost()"
+                        ng-disabled="$root.postModal.saving || $root.postModal.uploading || !$root.postModal.content.trim()">
+                    <span ng-if="$root.postModal.uploading">Envoi de l'image...</span>
+                    <span ng-if="$root.postModal.saving && !$root.postModal.uploading">Publication...</span>
+                    <span ng-if="!$root.postModal.saving && !$root.postModal.uploading">Publier sur l'Agora</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modale de session de lecture ── -->
+    <div class="modal-overlay session-create-overlay"
+         ng-if="$root.sessionModal.show"
+         ng-click="closeSessionModal()">
+        <div class="modal-content session-create-modal"
+             ng-click="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-activity-badge">Lecture</span>
+                    <h3 class="modal-title">Session de lecture</h3>
+                </div>
+                <button class="modal-close" ng-click="closeSessionModal()" aria-label="Fermer">×</button>
+            </div>
+
+            <div class="modal-body session-modal-body">
+
+                <!-- Erreur globale -->
+                <div ng-if="$root.sessionModal.error" class="alert alert-error" style="margin-bottom:12px">
+                    {{ $root.sessionModal.error }}
+                </div>
+
+                <!-- ── Sous-panel : Recherche OpenLibrary ─────────────────── -->
+                <div ng-if="$root.sessionModal.showSearch">
+                    <div class="session-search-row">
+                        <input type="text"
+                               class="form-control"
+                               ng-model="$root.sessionModal.searchQuery"
+                               placeholder="Titre, auteur…"
+                               ng-keypress="$event.key === 'Enter' && sessionSearchBooks()"
+                               autofocus>
+                        <button class="btn btn-ghost btn-sm"
+                                ng-click="$root.sessionModal.showSearch = false; $root.sessionModal.searchResults = []; $root.sessionModal.searchError = ''">
+                            ← Retour
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary btn-sm"
+                            style="margin-top: 8px; margin-bottom: 4px;"
+                            ng-click="sessionSearchBooks()"
+                            ng-disabled="$root.sessionModal.searchLoading || !$root.sessionModal.searchQuery">
+                        <span ng-if="!$root.sessionModal.searchLoading">Rechercher</span>
+                        <span ng-if="$root.sessionModal.searchLoading">Recherche…</span>
+                    </button>
+
+                    <div ng-if="$root.sessionModal.searchError" class="alert alert-error" style="margin-top:8px">
+                        {{ $root.sessionModal.searchError }}
+                    </div>
+
+                    <div class="book-picker-list" style="max-height: 260px; margin-top: 8px;"
+                         ng-if="$root.sessionModal.searchResults.length > 0">
+                        <div class="book-picker-item"
+                             ng-repeat="book in $root.sessionModal.searchResults track by book.book_id"
+                             ng-click="addBookFromSearch(book)">
+                            <img class="book-picker-cover"
+                                 ng-src="{{ book.cover_url || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                                 alt="{{ book.title }}">
+                            <div class="book-picker-info">
+                                <span class="book-picker-title">{{ book.title }}</span>
+                                <span class="book-picker-author">{{ book.author }}</span>
+                            </div>
+                            <span class="book-picker-check" ng-if="$root.sessionModal.searchLoading">…</span>
+                        </div>
+                    </div>
+
+                    <div class="club-empty-state"
+                         ng-if="!$root.sessionModal.searchLoading && $root.sessionModal.searchResults.length === 0 && $root.sessionModal.searchQuery">
+                        Lance une recherche pour trouver un livre.
+                    </div>
+                </div>
+
+                <!-- ── Vue principale : liste ou livre sélectionné ────────── -->
+                <div ng-if="!$root.sessionModal.showSearch">
+
+                    <!-- Livre déjà sélectionné -->
+                    <div ng-if="$root.sessionModal.selectedEntry">
+
+                        <div class="session-book-selected">
+                            <img class="session-book-cover"
+                                 ng-src="{{ $root.sessionModal.selectedEntry.LEVR_books.cover_url || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                                 alt="{{ $root.sessionModal.selectedEntry.LEVR_books.title }}">
+                            <div class="session-book-info">
+                                <span class="session-book-title">{{ $root.sessionModal.selectedEntry.LEVR_books.title }}</span>
+                                <span class="session-book-author">{{ $root.sessionModal.selectedEntry.LEVR_books.author }}</span>
+                                <span class="shelf-badge"
+                                      ng-class="$root.sessionModal.selectedEntry.shelf === 'EN_COURS' ? 'shelf-badge--en-cours' : 'shelf-badge--a-lire'">
+                                    {{ $root.sessionModal.selectedEntry.shelf === 'EN_COURS' ? 'En cours' : 'À lire' }}
+                                </span>
+                            </div>
+                            <button class="btn btn-ghost btn-sm" ng-click="deselectSessionBook()">Changer</button>
+                        </div>
+
+                        <!-- Info dernière page -->
+                        <p class="session-last-page" ng-if="!$root.sessionModal.lastEndLoading">
+                            <span ng-if="$root.sessionModal.lastEndPage > 0">
+                                Dernière page enregistrée&nbsp;: <strong>{{ $root.sessionModal.lastEndPage }}</strong>
+                            </span>
+                            <span ng-if="$root.sessionModal.lastEndPage === 0">
+                                Première session pour ce livre — départ depuis la page&nbsp;0.
+                            </span>
+                        </p>
+                        <p class="session-last-page" ng-if="$root.sessionModal.lastEndLoading">Chargement…</p>
+
+                        <!-- Page atteinte -->
+                        <div class="form-group" style="margin-top: 0.75rem">
+                            <label class="form-label">Page atteinte *</label>
+                            <input type="number"
+                                   class="form-control"
+                                   ng-model="$root.sessionModal.currentPage"
+                                   min="1"
+                                   placeholder="Ex : 80">
+                        </div>
+
+                        <!-- Total pages de mon édition (si inconnu) -->
+                        <div class="form-group" style="margin-top: 0.5rem"
+                             ng-if="!$root.sessionModal.selectedEntry.edition_total_pages">
+                            <label class="form-label">
+                                Total pages (mon édition)
+                                <small style="font-weight:400; color:var(--text-tertiary)">&nbsp;— optionnel</small>
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   ng-model="$root.sessionModal.editionPages"
+                                   min="1"
+                                   placeholder="Ex : 320">
+                        </div>
+
+                        <!-- Note -->
+                        <div class="form-group" style="margin-top: 0.5rem">
+                            <label class="form-label">
+                                Note
+                                <small style="font-weight:400; color:var(--text-tertiary)">&nbsp;— optionnel</small>
+                            </label>
+                            <textarea class="form-control"
+                                      ng-model="$root.sessionModal.note"
+                                      rows="2"
+                                      maxlength="300"
+                                      placeholder="Vos impressions…"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Liste des livres (aucun sélectionné) -->
+                    <div ng-if="!$root.sessionModal.selectedEntry">
+
+                        <div ng-if="$root.sessionModal.booksLoading" class="loading" style="padding: 1rem 0; text-align:center">
+                            Chargement de votre bibliothèque…
+                        </div>
+
+                        <div class="book-picker-list"
+                             ng-if="!$root.sessionModal.booksLoading && $root.sessionModal.books.length > 0">
+                            <div class="book-picker-item"
+                                 ng-repeat="entry in $root.sessionModal.books track by entry.LEVR_books.book_id"
+                                 ng-click="selectSessionBook(entry)">
+                                <img class="book-picker-cover"
+                                     ng-src="{{ entry.LEVR_books.cover_url || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                                     alt="{{ entry.LEVR_books.title }}">
+                                <div class="book-picker-info">
+                                    <span class="book-picker-title">{{ entry.LEVR_books.title }}</span>
+                                    <span class="book-picker-author">{{ entry.LEVR_books.author }}</span>
+                                </div>
+                                <span class="shelf-badge"
+                                      ng-class="entry.shelf === 'EN_COURS' ? 'shelf-badge--en-cours' : 'shelf-badge--a-lire'">
+                                    {{ entry.shelf === 'EN_COURS' ? 'En cours' : 'À lire' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="club-empty-state"
+                             ng-if="!$root.sessionModal.booksLoading && $root.sessionModal.books.length === 0">
+                            Aucun livre en cours ou à lire.
+                        </div>
+
+                        <button class="btn btn-ghost btn-sm session-search-btn"
+                                ng-click="$root.sessionModal.showSearch = true"
+                                ng-disabled="$root.sessionModal.booksLoading">
+                            <i data-lucide="search" style="width:14px;height:14px;margin-right:4px"></i>
+                            Rechercher un nouveau livre
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" ng-click="closeSessionModal()">
+                    Annuler
+                </button>
+                <button class="btn btn-publish"
+                        ng-click="submitSession()"
+                        ng-disabled="$root.sessionModal.saving || !$root.sessionModal.selectedEntry || !$root.sessionModal.currentPage">
+                    <span ng-if="$root.sessionModal.saving">Enregistrement…</span>
+                    <span ng-if="!$root.sessionModal.saving">Valider</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modale de création de bookclub ── -->
+    <div class="modal-overlay club-create-overlay"
+         ng-if="$root.clubModal.show"
+         ng-click="closeClubModal()">
+        <div class="modal-content club-create-modal"
+             ng-click="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-activity-badge">Bookclubs</span>
+                    <h3 class="modal-title">Créer un bookclub</h3>
+                </div>
+                <button class="modal-close" ng-click="closeClubModal()" aria-label="Fermer">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div ng-if="$root.clubModal.error" class="alert alert-error" style="margin-bottom: 12px;">
+                    {{ $root.clubModal.error }}
+                </div>
+
+                <div class="form-group">
+                    <label>Nom <span class="field-required">*</span></label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="$root.clubModal.name"
+                           placeholder="Ex : Les amoureux de Proust"
+                           maxlength="80">
+                </div>
+
+                <div class="form-group">
+                    <label>Description <span class="field-optional">(facultatif)</span></label>
+                    <textarea class="form-control"
+                              ng-model="$root.clubModal.description"
+                              placeholder="Décrivez votre bookclub en quelques mots…"
+                              rows="3"
+                              maxlength="400"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Visibilité</label>
+                    <div class="club-visibility-options">
+                        <div class="club-visibility-option"
+                             ng-class="{'club-visibility-option--active': $root.clubModal.isPublic}"
+                             ng-click="$root.clubModal.isPublic = true">
+                            <i class="club-visibility-icon" data-lucide="globe"></i>
+                            <div class="club-visibility-text">
+                                <strong>Public</strong>
+                                <span>Tout le monde peut rejoindre</span>
+                            </div>
+                        </div>
+                        <div class="club-visibility-option"
+                             ng-class="{'club-visibility-option--active': !$root.clubModal.isPublic}"
+                             ng-click="$root.clubModal.isPublic = false">
+                            <i class="club-visibility-icon" data-lucide="lock"></i>
+                            <div class="club-visibility-text">
+                                <strong>Privé</strong>
+                                <span>Sur invitation uniquement</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" ng-click="closeClubModal()">Annuler</button>
+                <button class="btn btn-primary"
+                        ng-click="submitClubCreate()"
+                        ng-disabled="$root.clubModal.creating || !$root.clubModal.name">
+                    <span ng-if="!$root.clubModal.creating">Créer le bookclub</span>
+                    <span ng-if="$root.clubModal.creating">Création…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chargement des dépendances -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Chargement du module principal EN PREMIER -->
+    <script src="js/app.js"></script>
+    
+    <!-- Puis les services -->
+    <script src="js/services/auth.service.js"></script>
+    <script src="js/services/user.service.js"></script>
+    <script src="js/services/profile.service.js"></script>
+    <script src="js/services/follow.service.js"></script>
+    <script src="js/services/book.service.js"></script>
+    <script src="js/services/shelf.service.js"></script>
+    <script src="js/services/toast.service.js"></script>
+    <script src="js/services/post.service.js"></script>
+    <script src="js/services/bookclub.service.js"></script>
+    <script src="js/services/review.service.js"></script>
+    <script src="js/services/reading.service.js"></script>
+    <script src="js/services/theme.service.js"></script>
+
+    <!-- Enfin les contrôleurs -->
+    <script src="js/controllers/app.controller.js"></script>
+    <script src="js/controllers/sidebar.controller.js"></script>
+    <script src="js/controllers/auth.controller.js"></script>
+    <script src="js/controllers/agora.controller.js"></script>
+    <script src="js/controllers/settings.controller.js"></script>
+    <script src="js/controllers/profile.controller.js"></script>
+    <script src="js/controllers/profile-public.controller.js"></script>
+    <script src="js/controllers/search.controller.js"></script>
+    <script src="js/controllers/library.controller.js"></script>
+    <script src="js/controllers/bookclubs.controller.js"></script>
+    <script src="js/controllers/bookclub.controller.js"></script>
+    <script src="js/controllers/discussion.controller.js"></script>
+    <script src="js/controllers/bookclub-settings.controller.js"></script>
+    <script src="js/controllers/book.controller.js"></script>
+</body>
+</html>

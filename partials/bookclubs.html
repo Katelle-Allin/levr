@@ -1,0 +1,141 @@
+<div class="page-content">
+
+    <!-- En-tête -->
+    <div class="club-list-header">
+        <h2>Bookclubs</h2>
+        <button class="btn btn-primary" ng-click="openClubModal()">
+            <i data-lucide="plus"></i> Créer un bookclub
+        </button>
+    </div>
+
+    <!-- Onglets -->
+    <div class="club-list-tabs" style="margin-bottom: 1.25rem;">
+        <button class="club-tab"
+                ng-class="{'club-tab--active': activeTab === 'mes-clubs'}"
+                ng-click="switchTab('mes-clubs')">
+            Mes bookclubs
+            <span ng-if="myClubs.length > 0" style="font-size: 0.75rem; opacity: 0.7;">
+                ({{ myClubs.length }})
+            </span>
+        </button>
+        <button class="club-tab"
+                ng-class="{'club-tab--active': activeTab === 'decouvrir'}"
+                ng-click="switchTab('decouvrir')">
+            Découvrir
+        </button>
+    </div>
+
+    <!-- Chargement global -->
+    <div ng-if="loading" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Erreur -->
+    <div ng-if="error && !loading" class="alert alert-error">{{ error }}</div>
+
+    <!-- ── Mes clubs ──────────────────────────────────────────────────────── -->
+    <div ng-if="!loading && activeTab === 'mes-clubs'">
+
+        <div ng-if="myClubs.length === 0" class="club-empty-state" style="padding: 2rem 0; text-align: center;">
+            <p style="margin-bottom: 1rem;">Vous n'avez encore rejoint aucun bookclub.</p>
+            <button class="btn btn-secondary" ng-click="switchTab('decouvrir')">
+                <i data-lucide="compass"></i> Découvrir des bookclubs
+            </button>
+        </div>
+
+        <div class="club-grid" ng-if="myClubs.length > 0">
+            <div class="club-card"
+                 ng-repeat="club in myClubs track by club.id"
+                 ng-if="club && club.id"
+                 ng-click="goToClub(club)">
+
+                <!-- Logo / placeholder -->
+                <div class="club-card-logo-wrap">
+                    <img class="club-card-logo"
+                         ng-if="club.logo_url"
+                         ng-src="{{ club.logo_url }}"
+                         alt="{{ club.name }}">
+                    <div class="club-card-logo club-card-logo-placeholder" ng-if="!club.logo_url">
+                        {{ club.name ? club.name[0].toUpperCase() : '?' }}
+                    </div>
+                </div>
+
+                <!-- Corps -->
+                <div class="club-card-body">
+                    <div class="club-card-name">{{ club.name }}</div>
+                    <p class="club-card-desc" ng-if="club.description">{{ club.description }}</p>
+                    <div class="club-card-meta" style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+                        <span class="club-role-badge"
+                              ng-class="club.myRole === 'owner' ? 'club-role-badge--admin' : 'club-role-badge--member'">
+                            {{ club.myRole === 'owner' ? 'Admin' : 'Membre' }}
+                        </span>
+                        <span class="badge-public"  ng-if="club.is_public">Public</span>
+                        <span class="badge-private" ng-if="!club.is_public">Privé</span>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="club-card-actions">
+                    <span class="btn btn-secondary btn-sm" ng-if="club.myRole === 'owner'">
+                        <i data-lucide="settings-2"></i> Gérer
+                    </span>
+                    <span class="btn btn-secondary btn-sm" ng-if="club.myRole !== 'owner'">
+                        Ouvrir
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Découvrir ─────────────────────────────────────────────────────── -->
+    <div ng-if="!loading && activeTab === 'decouvrir'">
+
+        <div ng-if="publicClubs.length === 0" class="club-empty-state" style="padding: 2rem 0; text-align: center;">
+            <p>Aucun bookclub public à découvrir pour le moment.</p>
+            <p style="font-size: 0.85rem; color: var(--text-tertiary); margin-top: 0.5rem;">
+                Créez le premier en cliquant sur "Créer un bookclub" ci-dessus !
+            </p>
+        </div>
+
+        <div class="club-grid" ng-if="publicClubs.length > 0">
+            <div class="club-card club-card--explore"
+                 ng-repeat="club in publicClubs track by club.id"
+                 ng-if="club && club.id">
+
+                <!-- Logo / placeholder -->
+                <div class="club-card-logo-wrap">
+                    <img class="club-card-logo"
+                         ng-if="club.logo_url"
+                         ng-src="{{ club.logo_url }}"
+                         alt="{{ club.name }}">
+                    <div class="club-card-logo club-card-logo-placeholder" ng-if="!club.logo_url">
+                        {{ club.name ? club.name[0].toUpperCase() : '?' }}
+                    </div>
+                </div>
+
+                <!-- Corps -->
+                <div class="club-card-body">
+                    <div class="club-card-name">{{ club.name }}</div>
+                    <p class="club-card-desc" ng-if="club.description">{{ club.description }}</p>
+                    <div class="club-card-meta" style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+                        <span class="badge-public"  ng-if="club.is_public">Public</span>
+                        <span class="badge-private" ng-if="!club.is_public">Privé</span>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="club-card-actions">
+                    <button class="btn btn-primary btn-sm club-join-btn"
+                            ng-click="joinClub(club)"
+                            ng-disabled="club._joining">
+                        <span ng-if="!club._joining">Rejoindre</span>
+                        <span ng-if="club._joining">...</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>

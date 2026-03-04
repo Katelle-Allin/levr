@@ -1,0 +1,100 @@
+<div class="auth-container">
+    <div class="page-header">
+        <h2>Rejoindre LEVR</h2>
+        <p>Créez votre compte pour découvrir une communauté de lecteurs passionnés</p>
+    </div>
+
+    <!-- Messages d'erreur et de succès -->
+    <div ng-if="error" class="alert alert-error">
+        {{ error }}
+    </div>
+    <div ng-if="success" class="alert alert-success">
+        {{ success }}
+    </div>
+
+    <!-- Formulaire d'inscription -->
+    <form ng-submit="signup()" name="signupForm">
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <input 
+                type="text" 
+                id="username" 
+                class="form-control" 
+                ng-model="signupData.username"
+                placeholder="Votre nom d'utilisateur"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+                type="email" 
+                id="email" 
+                class="form-control" 
+                ng-model="signupData.email"
+                placeholder="vous@exemple.com"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input
+                type="password"
+                id="password"
+                class="form-control"
+                ng-model="signupData.password"
+                placeholder="Au moins 6 caractères"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="password-confirm">Confirmer le mot de passe</label>
+            <input
+                type="password"
+                id="password-confirm"
+                class="form-control"
+                ng-model="signupData.passwordConfirm"
+                placeholder="Répétez votre mot de passe"
+                required>
+            <p class="field-error"
+               ng-if="signupData.passwordConfirm && signupData.password !== signupData.passwordConfirm">
+                Les mots de passe ne correspondent pas.
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label>Genres littéraires préférés (max 3)</label>
+            <div class="genres-grid">
+                <div class="genre-item" ng-repeat="genre in availableGenres">
+                    <input 
+                        type="checkbox" 
+                        id="genre-{{ $index }}"
+                        ng-checked="isGenreSelected(genre)"
+                        ng-click="toggleGenre(genre)">
+                    <label for="genre-{{ $index }}" class="genre-label">
+                        {{ genre }}
+                    </label>
+                </div>
+            </div>
+            <p class="genre-count">
+                {{ signupData.favoriteGenres.length }} / 3 sélectionné(s)
+            </p>
+        </div>
+
+        <button 
+            type="submit" 
+            class="btn btn-primary btn-block"
+            ng-disabled="loading || signupForm.$invalid">
+            <span ng-if="!loading">S'inscrire</span>
+            <span ng-if="loading">Inscription en cours...</span>
+        </button>
+    </form>
+
+    <!-- Lien vers la connexion -->
+    <div class="auth-toggle">
+        <p>
+            Vous avez déjà un compte ? 
+            <a href="#!/login" class="btn-link">Se connecter</a>
+        </p>
+    </div>
+</div>

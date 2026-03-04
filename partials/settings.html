@@ -1,0 +1,155 @@
+<div class="container">
+    <div class="page-header">
+        <h2>Paramètres</h2>
+        <p>Gérez votre compte et vos préférences</p>
+    </div>
+
+    <div ng-if="loading" class="loading">Chargement de vos paramètres…</div>
+
+    <div ng-if="!loading && currentUser" class="settings-layout">
+
+        <!-- ── Apparence ──────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <h3 class="settings-card-title">Apparence</h3>
+            <div class="setting-row">
+                <div class="setting-text">
+                    <span class="setting-title">{{ currentTheme === 'dark' ? 'Mode sombre' : 'Mode clair' }}</span>
+                    <p class="setting-desc">Active un thème avec fond noir et texte clair</p>
+                </div>
+                <label class="toggle-label" aria-label="Changer le thème">
+                    <input type="checkbox"
+                           ng-model="currentTheme"
+                           ng-true-value="'dark'"
+                           ng-false-value="'light'"
+                           ng-change="toggleTheme()"
+                           class="toggle-input">
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ── Genres préférés ────────────────────────────────────────── -->
+        <div class="settings-card">
+            <h3 class="settings-card-title">Genres préférés</h3>
+            <p class="settings-card-desc">Sélectionnez jusqu'à 3 genres littéraires.</p>
+
+            <div ng-if="genreState.error" class="alert alert-error" style="margin-bottom:1rem">
+                {{ genreState.error }}
+            </div>
+            <div ng-if="genreState.success" class="alert alert-success" style="margin-bottom:1rem">
+                {{ genreState.success }}
+            </div>
+
+            <div class="genres-grid">
+                <div class="genre-item" ng-repeat="genre in availableGenres">
+                    <input type="checkbox"
+                           id="settings-genre-{{ $index }}"
+                           ng-checked="isGenreSelected(genre)"
+                           ng-click="toggleGenre(genre)">
+                    <label for="settings-genre-{{ $index }}" class="genre-label">{{ genre }}</label>
+                </div>
+            </div>
+            <p class="genre-count">{{ selectedGenres.length }} / 3 sélectionné(s)</p>
+
+            <button class="btn btn-primary"
+                    ng-click="saveGenres()"
+                    ng-disabled="genreState.saving || selectedGenres.length === 0">
+                <span ng-if="!genreState.saving">Enregistrer les genres</span>
+                <span ng-if="genreState.saving">Enregistrement…</span>
+            </button>
+        </div>
+
+        <!-- ── Compte ─────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <h3 class="settings-card-title">Compte</h3>
+            <p class="settings-card-desc">
+                Connecté en tant que <strong>{{ currentUser.username }}</strong>
+                — <span class="settings-current-email">{{ currentUser.email }}</span>
+            </p>
+
+            <!-- Changer l'email -->
+            <div class="settings-subsection">
+                <h4 class="settings-subsection-title">Changer l'adresse email</h4>
+
+                <div ng-if="emailState.error" class="alert alert-error" style="margin-bottom:0.75rem">
+                    {{ emailState.error }}
+                </div>
+                <div ng-if="emailState.success" class="alert alert-success" style="margin-bottom:0.75rem">
+                    {{ emailState.success }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nouvelle adresse email</label>
+                    <input type="email"
+                           class="form-control"
+                           ng-model="emailForm.newEmail"
+                           placeholder="nouvelle@exemple.com"
+                           ng-disabled="emailState.saving">
+                </div>
+                <button class="btn btn-secondary"
+                        ng-click="changeEmail()"
+                        ng-disabled="emailState.saving || !emailForm.newEmail">
+                    <span ng-if="!emailState.saving">Envoyer le lien de confirmation</span>
+                    <span ng-if="emailState.saving">Envoi en cours…</span>
+                </button>
+            </div>
+
+            <!-- Changer le mot de passe -->
+            <div class="settings-subsection">
+                <h4 class="settings-subsection-title">Changer le mot de passe</h4>
+
+                <div ng-if="passwordState.error" class="alert alert-error" style="margin-bottom:0.75rem">
+                    {{ passwordState.error }}
+                </div>
+                <div ng-if="passwordState.success" class="alert alert-success" style="margin-bottom:0.75rem">
+                    {{ passwordState.success }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nouveau mot de passe</label>
+                    <input type="password"
+                           class="form-control"
+                           ng-model="passwordForm.newPwd"
+                           placeholder="6 caractères minimum"
+                           ng-disabled="passwordState.saving">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmer le mot de passe</label>
+                    <input type="password"
+                           class="form-control"
+                           ng-model="passwordForm.confirm"
+                           placeholder="Répétez le nouveau mot de passe"
+                           ng-disabled="passwordState.saving">
+                </div>
+                <button class="btn btn-secondary"
+                        ng-click="changePassword()"
+                        ng-disabled="passwordState.saving || !passwordForm.newPwd || !passwordForm.confirm">
+                    <span ng-if="!passwordState.saving">Mettre à jour le mot de passe</span>
+                    <span ng-if="passwordState.saving">Mise à jour…</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Zone de danger ────────────────────────────────────────── -->
+        <div class="settings-card settings-card--danger">
+            <h3 class="settings-card-title settings-card-title--danger">Zone de danger</h3>
+
+            <div ng-if="deleteState.error" class="alert alert-error" style="margin-bottom:0.75rem">
+                {{ deleteState.error }}
+            </div>
+
+            <p class="settings-card-desc">
+                La suppression de votre compte effacera définitivement toutes vos données :
+                bibliothèque, posts, sessions de lecture, avis de livres.
+                <strong>Cette action est irréversible.</strong>
+            </p>
+            <button class="btn btn-danger"
+                    ng-click="deleteAccount()"
+                    ng-disabled="deleteState.saving">
+                <span ng-if="!deleteState.saving">Supprimer mon compte</span>
+                <span ng-if="deleteState.saving">Suppression en cours…</span>
+            </button>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,99 @@
+<div class="container">
+    <div class="page-header">
+        <h2>Ma bibliothèque</h2>
+        <p ng-if="books.length > 0">{{ books.length }} livre(s) dans votre collection</p>
+        <p ng-if="books.length === 0 && !loading">Votre bibliothèque est vide</p>
+    </div>
+
+    <!-- Messages -->
+    <div ng-if="error" class="alert alert-error">{{ error }}</div>
+    <div ng-if="success" class="alert alert-success">{{ success }}</div>
+
+    <!-- État de chargement -->
+    <div ng-if="loading" class="loading">Chargement de votre bibliothèque...</div>
+
+    <!-- Bibliothèque vide -->
+    <div ng-if="!loading && books.length === 0" class="empty-library">
+        <div class="empty-library-icon">📚</div>
+        <h3>Votre bibliothèque est vide</h3>
+        <p>Commencez par rechercher des livres à ajouter !</p>
+        <a href="#!/search" class="btn btn-primary">Rechercher des livres</a>
+    </div>
+
+    <!-- Filtres par étagère -->
+    <div ng-if="!loading && books.length > 0" class="library-filters">
+        <div class="shelf-chips">
+            <button class="shelf-chip" 
+                    ng-class="{active: selectedShelf === null}"
+                    ng-click="selectShelf(null)">
+                Toutes ({{ books.length }})
+            </button>
+            <button class="shelf-chip" 
+                    ng-repeat="shelf in shelves"
+                    ng-class="{active: isShelfSelected(shelf)}"
+                    ng-click="selectShelf(shelf)">
+                {{ formatShelfName(shelf) }} ({{ getShelfCount(shelf) }})
+            </button>
+        </div>
+    </div>
+
+    <!-- Liste des livres -->
+    <div ng-if="!loading && filteredBooks.length > 0" class="library-books">
+        <div class="books-grid">
+            <div class="library-book-card" ng-repeat="book in filteredBooks"
+                 ng-click="goToBook(book)" style="cursor:pointer">
+                <div class="book-cover">
+                    <img ng-if="book.LEVR_books.cover_url"
+                         ng-src="{{ book.LEVR_books.cover_url }}"
+                         alt="{{ book.LEVR_books.title }}"
+                         onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+                    <div ng-if="!book.LEVR_books.cover_url" class="book-cover-placeholder">
+                        📚
+                    </div>
+                </div>
+
+                <div class="book-info">
+                    <h4 class="book-title">{{ book.LEVR_books.title }}</h4>
+                    <p class="book-author">{{ book.LEVR_books.author }}</p>
+                    <p class="book-genre-row" ng-if="book.LEVR_books.genre_levr">
+                        <span class="genre-badge">{{ book.LEVR_books.genre_levr }}</span>
+                    </p>
+
+                    <div class="book-shelf-badge">
+                        {{ formatShelfName(book.shelf) }}
+                    </div>
+
+                    <div class="book-actions" ng-click="$event.stopPropagation()">
+                        <div class="book-action-group">
+                            <label class="book-action-label">Déplacer vers :</label>
+                            <select class="book-shelf-select" 
+                                    ng-change="changeShelf(book, book.newShelf)"
+                                    ng-model="book.newShelf">
+                                <option value="">-- Choisir --</option>
+                                <option value="A_LIRE" ng-if="book.shelf !== 'A_LIRE'">À lire</option>
+                                <option value="EN_COURS" ng-if="book.shelf !== 'EN_COURS'">En cours</option>
+                                <option value="LU" ng-if="book.shelf !== 'LU'">Lu</option>
+                                <option ng-repeat="shelf in customShelves"
+                                        ng-if="shelf.name !== book.shelf"
+                                        ng-value="shelf.name">
+                                    {{ shelf.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <button class="btn-delete" 
+                                ng-click="deleteBook(book)"
+                                title="Supprimer">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aucun livre dans le filtre sélectionné -->
+    <div ng-if="!loading && books.length > 0 && filteredBooks.length === 0" class="empty-filter">
+        <p>Aucun livre dans cette étagère</p>
+    </div>
+</div>

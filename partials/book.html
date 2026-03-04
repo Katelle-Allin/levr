@@ -1,0 +1,208 @@
+<div class="container">
+
+    <!-- Bouton retour -->
+    <div class="page-back">
+        <button class="btn-back" ng-click="goBack()">← Retour</button>
+    </div>
+
+    <!-- Chargement -->
+    <div ng-if="loading" class="loading">Chargement du livre...</div>
+
+    <!-- Erreur -->
+    <div ng-if="!loading && error" class="alert alert-error">{{ error }}</div>
+
+    <!-- Contenu -->
+    <div ng-if="!loading && !error" class="book-page">
+
+        <!-- ── Header : couverture + infos ──────────────────────────── -->
+        <div class="book-header">
+
+            <!-- Couverture -->
+            <div class="book-cover-wrap">
+                <img ng-if="book.cover_url"
+                     ng-src="{{ book.cover_url }}"
+                     alt="{{ book.title }}"
+                     class="book-cover-large">
+                <div ng-if="!book.cover_url" class="book-cover-large-placeholder">
+                    <span>📖</span>
+                </div>
+            </div>
+
+            <!-- Métadonnées -->
+            <div class="book-meta">
+                <h1 class="book-title">{{ book.title || 'Titre inconnu' }}</h1>
+                <p class="book-author" ng-if="book.author">{{ book.author }}</p>
+                <p class="book-year" ng-if="book.first_publish_year">{{ book.first_publish_year }}</p>
+                <p class="book-genre">
+                    <span class="genre-badge" ng-class="{'genre-badge--unset': !book.genre_levr}">
+                        {{ book.genre_levr || 'Non classé' }}
+                    </span>
+                </p>
+
+                <!-- Stats rapides -->
+                <div class="book-stats-bar">
+                    <span ng-if="avgRating !== null">
+                        ★ {{ avgRating | number:1 }} · {{ reviewCount }} {{ reviewCount === 1 ? 'avis' : 'avis' }}
+                    </span>
+                    <span ng-if="avgRating === null" class="book-stats-empty">
+                        Aucun avis pour l'instant
+                    </span>
+                </div>
+
+                <!-- Action bibliothèque -->
+                <div ng-if="currentUser" class="book-library-action">
+
+                    <!-- Pas encore dans la bibliothèque -->
+                    <div ng-if="!userBook">
+                        <button ng-if="!showShelfPicker"
+                                class="btn btn-primary btn-sm"
+                                ng-click="setShowShelfPicker(true)">
+                            + Ajouter à ma bibliothèque
+                        </button>
+                        <div ng-if="showShelfPicker" class="inline-shelf-picker">
+                            <select ng-model="libShelf" class="form-control-sm">
+                                <option value="A_LIRE">À lire</option>
+                                <option value="EN_COURS">En cours</option>
+                                <option value="LU">Lu</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm"
+                                    ng-click="addToLibrary()"
+                                    ng-disabled="addingToLib">
+                                <span ng-if="!addingToLib">Ajouter</span>
+                                <span ng-if="addingToLib">Ajout…</span>
+                            </button>
+                            <button class="btn btn-ghost btn-sm"
+                                    ng-click="setShowShelfPicker(false)">
+                                Annuler
+                            </button>
+                        </div>
+                        <p class="alert alert-error" ng-if="libError" style="margin-top:0.5rem;">{{ libError }}</p>
+                    </div>
+
+                    <!-- Déjà dans la bibliothèque -->
+                    <div ng-if="userBook" class="book-already-in-lib">
+                        <span class="book-in-lib-badge">✓ {{ formatShelfName(userBook.shelf) }}</span>
+                        <select ng-model="userBook.newShelf"
+                                ng-change="changeLibShelf(userBook.newShelf)"
+                                class="form-control-sm">
+                            <option value="">Déplacer vers…</option>
+                            <option value="A_LIRE" ng-if="userBook.shelf !== 'A_LIRE'">À lire</option>
+                            <option value="EN_COURS" ng-if="userBook.shelf !== 'EN_COURS'">En cours</option>
+                            <option value="LU" ng-if="userBook.shelf !== 'LU'">Lu</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- Description -->
+                <div ng-if="description" class="book-description-wrap">
+                    <p class="book-description">
+                        <span ng-if="!descTrimmed || showFullDesc">{{ description }}</span>
+                        <span ng-if="descTrimmed && !showFullDesc">{{ description | limitTo:300 }}…</span>
+                    </p>
+                    <button ng-if="descTrimmed"
+                            class="desc-toggle"
+                            ng-click="toggleDesc()">
+                        {{ showFullDesc ? 'Lire moins ▲' : 'Lire plus ▼' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Mon avis ──────────────────────────────────────────────── -->
+        <div class="book-section" ng-if="currentUser">
+            <h3 class="section-title">Mon avis</h3>
+
+            <!-- Sélecteur d'étoiles -->
+            <div class="star-picker"
+                 ng-mouseleave="leaveStar()">
+                <span ng-repeat="n in ratingArray"
+                      class="star"
+                      ng-class="starClass(n)"
+                      ng-click="setRating(n)"
+                      ng-mouseenter="hoverStar(n)"
+                      title="{{ n }} étoile{{ n > 1 ? 's' : '' }}">★</span>
+                <span class="star-label" ng-if="editForm.rating > 0">{{ editForm.rating }}/5</span>
+            </div>
+
+            <!-- Textarea -->
+            <div class="review-form">
+                <textarea class="form-control review-textarea"
+                          ng-model="editForm.content"
+                          placeholder="Partagez votre avis sur ce livre… (optionnel)"
+                          maxlength="2000"
+                          rows="4"></textarea>
+            </div>
+
+            <!-- Erreur -->
+            <div class="alert alert-error" ng-if="saveError" style="margin-top: 0.5rem;">
+                {{ saveError }}
+            </div>
+
+            <!-- Actions -->
+            <div class="review-actions">
+                <button class="btn btn-primary btn-sm"
+                        ng-click="saveReview()"
+                        ng-disabled="saving || editForm.rating < 1">
+                    <span ng-if="saving">Enregistrement…</span>
+                    <span ng-if="!saving && !myReview">Publier</span>
+                    <span ng-if="!saving && myReview">Mettre à jour</span>
+                </button>
+                <button class="btn btn-ghost btn-sm btn-danger-outline"
+                        ng-if="myReview"
+                        ng-click="deleteReview()"
+                        ng-disabled="deleting">
+                    {{ deleting ? 'Suppression…' : 'Supprimer mon avis' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Invitation à se connecter -->
+        <div class="book-section" ng-if="!currentUser" style="text-align: center; color: var(--text-secondary);">
+            <a href="#!/login">Connecte-toi</a> pour laisser un avis.
+        </div>
+
+        <!-- ── Avis de la communauté ─────────────────────────────────── -->
+        <div class="book-section">
+            <h3 class="section-title">Avis de la communauté</h3>
+
+            <!-- Vide -->
+            <div class="club-empty-state" ng-if="reviews.length === 0">
+                Aucun avis pour l'instant. Sois le premier à noter ce livre&nbsp;!
+            </div>
+
+            <!-- Liste -->
+            <div ng-repeat="review in reviews | limitTo:reviewsVisible" class="review-item">
+                <img class="review-avatar"
+                     ng-src="{{ review.LEVR_users.profile_picture || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}"
+                     alt="{{ review.LEVR_users.username }}">
+                <div class="review-body">
+                    <div class="review-meta">
+                        <a class="review-username"
+                           href="#!/profile/{{ review.LEVR_users.username }}">
+                            {{ review.LEVR_users.username }}
+                        </a>
+                        <span class="star-readonly">
+                            <span ng-repeat="n in ratingArray"
+                                  class="star star-sm"
+                                  ng-class="starClassRo(n, review.rating)">★</span>
+                        </span>
+                        <span class="review-date">{{ formatReviewDate(review.created_at) }}</span>
+                        <span ng-if="review.updated_at !== review.created_at"
+                              class="review-edited">(modifié)</span>
+                    </div>
+                    <p class="review-content" ng-if="review.content">{{ review.content }}</p>
+                </div>
+            </div>
+
+            <!-- Afficher plus -->
+            <div style="text-align: center; margin-top: 1rem;" ng-if="hasMore()">
+                <button class="btn btn-ghost btn-sm btn-show-more"
+                        ng-click="showMoreReviews()">
+                    Afficher plus
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
