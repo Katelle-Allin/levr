@@ -67,6 +67,29 @@ angular.module('levrApp').factory('ToastService', ['$rootScope', '$timeout', fun
          * @param {Object|null} book       - { title, cover_url, ... } du livre de la session
          * @param {Object}      payload    - payload READ_SESSION pour PostService.openModal
          */
+        /**
+         * Suggère de partager un avis (note ou commentaire) sur l'Agora.
+         * @param {Object|null} book    - { title, ... } du livre noté
+         * @param {Object}      payload - payload RATE_BOOK pour PostService.openModal
+         */
+        addReviewPrompt: function(book, payload) {
+            var subtitle = (book && book.title)
+                ? 'Voulez-vous partager votre avis sur \u00ab\u00a0' + book.title + '\u00a0\u00bb\u00a0?'
+                : 'Voulez-vous partager votre avis sur l\'Agora\u00a0?';
+
+            return service.add({
+                type:        'prompt',
+                title:       'Partager sur l\'Agora\u00a0?',
+                subtitle:    subtitle,
+                autoDismiss: true,
+                duration:    9000,
+                actions: [
+                    { label: 'Pas maintenant', primary: false, payload: null },
+                    { label: 'Faire un post',  primary: true,  payload: payload }
+                ]
+            });
+        },
+
         addSessionPrompt: function(pagesTotal, book, payload) {
             var p     = pagesTotal || 0;
             var title = 'Bravo\u00a0! ' + p + '\u00a0page' + (p > 1 ? 's' : '') +

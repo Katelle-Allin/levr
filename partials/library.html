@@ -1,9 +1,4 @@
 <div class="container">
-    <div class="page-header">
-        <h2>Ma bibliothèque</h2>
-        <p ng-if="books.length > 0">{{ books.length }} livre(s) dans votre collection</p>
-        <p ng-if="books.length === 0 && !loading">Votre bibliothèque est vide</p>
-    </div>
 
     <!-- Messages -->
     <div ng-if="error" class="alert alert-error">{{ error }}</div>

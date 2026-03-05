@@ -18,9 +18,9 @@
 
 angular.module('levrApp').controller('BookCtrl', [
     '$scope', '$routeParams', '$location', '$http', '$q', '$timeout', '$window',
-    'BookService', 'ReviewService', 'AuthService', 'ToastService',
+    'BookService', 'ReviewService', 'AuthService', 'ToastService', 'PostService',
     function($scope, $routeParams, $location, $http, $q, $timeout, $window,
-             BookService, ReviewService, AuthService, ToastService) {
+             BookService, ReviewService, AuthService, ToastService, PostService) {
 
         var bookId = $routeParams.bookId;
 
@@ -414,6 +414,7 @@ angular.module('levrApp').controller('BookCtrl', [
             $scope.saving    = true;
             $scope.saveError = '';
 
+            var ratingSnapshot = $scope.editForm.rating;
             ReviewService.saveReview(
                 bookId,
                 $scope.currentUser.id,
@@ -427,6 +428,12 @@ angular.module('levrApp').controller('BookCtrl', [
                 $scope.reviews = reviews;
                 updateStats(reviews);
                 $scope.saving  = false;
+                // Proposer de partager sur l'Agora après enregistrement réussi
+                ToastService.addReviewPrompt($scope.book, {
+                    actionType: 'RATE_BOOK',
+                    book:       $scope.book,
+                    rating:     ratingSnapshot
+                });
             }).catch(function(err) {
                 $scope.saveError = typeof err === 'string' ? err : (err && err.message) || 'Erreur lors de la sauvegarde';
                 $scope.saving    = false;

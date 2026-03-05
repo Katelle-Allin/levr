@@ -7,11 +7,23 @@
     --agora-action-liked: #E8394C;
 }
 
-/* ── Page wrapper — hérite du fond app (--bg-primary) ────── */
-/* Light: #f5f7fa  |  Dark: #0a0a0a  — géré par styles.css */
+/* ── Page wrapper — pleine largeur (annule le padding de .main-content) */
 .agora-page {
     background: transparent;
     min-height: 100%;
+    /* Annule le padding horizontal de .main-content (2rem desktop, 1rem mobile) */
+    margin-left:  -2rem;
+    margin-right: -2rem;
+    /* Annule aussi le padding-top résiduel de .main-content */
+    margin-top: -1.5rem;
+}
+
+@media (max-width: 768px) {
+    .agora-page {
+        margin-left:  -1rem;
+        margin-right: -1rem;
+        margin-top: -1rem;
+    }
 }
 
 /* ── Empty state ──────────────────────────────────────────── */
@@ -34,26 +46,18 @@
 .agora-feed {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    max-width: 540px;
-    margin: 0 auto;
+    gap: 0;
+    padding: 0;
 }
 
-/* ── Card — fond blanc, ombre grise visible ───────────────── */
-/*
-   IMPORTANT: on utilise des valeurs littérales (#fff, rgba) pour ne pas
-   dépendre de variables CSS qui pourraient venir d'un styles.css mis en
-   cache (vieille version). Les !important garantissent la priorité.
-*/
+/* ── Card — pleine largeur, séparateur bas + espace inter-posts */
 .agora-card {
     background: #ffffff !important;
-    border-radius: 16px !important;
-    /* ombre grise douce — clairement visible sur fond #F5F4F0 */
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.08),
-        0 4px 16px rgba(0, 0, 0, 0.10) !important;
-    border: 1px solid rgba(0, 0, 0, 0.07) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    margin-bottom: 16px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 0;
@@ -283,8 +287,8 @@
 /* ── Dark mode ────────────────────────────────────────────── */
 body.dark-mode .agora-card {
     background: #1e1e1e !important;
-    border-color: rgba(255, 255, 255, 0.07) !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.5) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+    box-shadow: none !important;
 }
 body.dark-mode .agora-username     { color: #f0f0f0 !important; }
 body.dark-mode .agora-content      { color: #e0e0e0 !important; }

@@ -108,6 +108,18 @@ body {
     text-transform: uppercase;
 }
 
+.topbar-brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-img {
+    height: calc(var(--topbar-height) * 0.75);
+    width: auto;
+    display: block;
+}
+
 .topbar-left,
 .topbar-right {
     display: flex;
@@ -6504,8 +6516,12 @@ body.dark-mode .reaction-chip--mine {
     margin-left: auto;
 }
 
-.agora-menu-btn {
+.post-menu-wrap {
+    position: relative;
     flex-shrink: 0;
+}
+
+.agora-menu-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6521,8 +6537,39 @@ body.dark-mode .reaction-chip--mine {
 .agora-menu-btn svg { width: 18px; height: 18px; }
 .agora-menu-btn:hover {
     background: var(--surface-raised);
-    color: var(--danger-text);
+    color: var(--text-primary);
 }
+
+.post-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    min-width: 160px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.post-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    text-align: left;
+    transition: background 0.12s;
+}
+.post-menu-item:hover { background: var(--sidebar-hover); }
+.post-menu-item--danger { color: var(--danger-text); }
+.post-menu-item--danger:hover { background: rgba(220, 38, 38, 0.08); }
 
 /* ── Couverture : cadre centré avec fond secondaire ──────── */
 .agora-cover-wrap {

@@ -88,6 +88,12 @@ angular.module('levrApp').factory('PostService', [
                 : null;
         }
 
+        if (type === 'RATE_BOOK') {
+            return book
+                ? { prefix: 'a not\u00e9', suffix: null, book: book }
+                : null;
+        }
+
         return null;
     }
 
@@ -121,6 +127,13 @@ angular.module('levrApp').factory('PostService', [
                 text += '\n\n\u00ab\u00a0' + payload.book.title + '\u00a0\u00bb';
             }
             return text;
+        }
+
+        if (payload.actionType === 'RATE_BOOK') {
+            var stars = payload.rating || 0;
+            var starsStr = '';
+            for (var s = 0; s < stars; s++) starsStr += '\u2605';
+            return title ? starsStr + ' ' + title : starsStr;
         }
 
         return '';

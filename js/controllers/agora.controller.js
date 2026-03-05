@@ -8,8 +8,8 @@
  */
 
 angular.module('levrApp').controller('AgoraController', [
-    '$scope', '$rootScope', '$location', 'PostService', 'AuthService', 'ProfileService', 'BookService',
-    function($scope, $rootScope, $location, PostService, AuthService, ProfileService, BookService) {
+    '$scope', '$rootScope', '$location', '$document', 'PostService', 'AuthService', 'ProfileService', 'BookService', 'supabase',
+    function($scope, $rootScope, $location, $document, PostService, AuthService, ProfileService, BookService, supabase) {
 
         $scope.posts           = [];
         $scope.loading         = true;
@@ -177,6 +177,7 @@ angular.module('levrApp').controller('AgoraController', [
          */
         $scope.deletePost = function(post) {
             if (!$scope.currentUser || post.user_id !== $scope.currentUser.id) return;
+            post._menuOpen = false;
             if (!window.confirm('Supprimer ce post d\u00e9finitivement\u00a0?')) return;
 
             PostService.deletePost(post.id).then(function() {
@@ -191,6 +192,45 @@ angular.module('levrApp').controller('AgoraController', [
                 console.error('[AgoraController] deletePost error:', err);
             });
         };
+
+        /** Ouvre/ferme le menu contextuel d'un post. Ferme les autres menus ouverts. */
+        $scope.togglePostMenu = function($event, post) {
+            $event.stopPropagation();
+            var isOpen = post._menuOpen;
+            // Fermer tous les menus
+            for (var i = 0; i < $scope.posts.length; i++) {
+                $scope.posts[i]._menuOpen = false;
+            }
+            post._menuOpen = !isOpen;
+        };
+
+        /** Signale un post appartenant à un autre utilisateur. */
+        $scope.reportPost = function(post) {
+            if (!$scope.currentUser || post.user_id === $scope.currentUser.id) return;
+            post._menuOpen = false;
+            if (!window.confirm('Signaler ce post comme inappropri\u00e9\u00a0?')) return;
+
+            supabase
+                .from('LEVR_post_reports')
+                .insert({ post_id: post.id, user_id: $scope.currentUser.id })
+                .then(function(res) {
+                    if (res.error) {
+                        // Doublon = déjà signalé, on ignore silencieusement
+                        if (res.error.code !== '23505') {
+                            console.error('[AgoraController] reportPost error:', res.error);
+                        }
+                    }
+                });
+        };
+
+        // Ferme tous les menus au clic en dehors
+        function closeAllMenus() {
+            for (var i = 0; i < $scope.posts.length; i++) {
+                $scope.posts[i]._menuOpen = false;
+            }
+            $scope.$apply();
+        }
+        $document.on('click', closeAllMenus);
 
         // ── Écoute des événements globaux ────────────────────────────────────
 
@@ -213,6 +253,7 @@ angular.module('levrApp').controller('AgoraController', [
         $scope.$on('$destroy', function() {
             unsubCreate();
             unsubDelete();
+            $document.off('click', closeAllMenus);
         });
     }
 ]);
