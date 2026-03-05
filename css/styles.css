@@ -5878,6 +5878,97 @@ body.dark-mode .reaction-chip--mine {
     .stat-card .stat-label { font-size: 0.7rem; }
 }
 
+/* ── Books grid : 2 colonnes sur mobile ─────────────────────────────── */
+@media (max-width: 600px) {
+    .books-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+    }
+
+    /* Padding compact pour les deux types de cartes */
+    .book-card,
+    .library-book-card {
+        padding: 0.65rem;
+    }
+
+    /* Couverture : conserver le ratio 2/3, pas de margin-bottom excessif */
+    .book-card .book-cover,
+    .library-book-card .book-cover {
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+    }
+
+    /* Titre : légèrement plus petit, garder 2 lignes max */
+    .book-card .book-title,
+    .library-book-card .book-title {
+        font-size: 0.82rem;
+        margin-bottom: 0.2rem;
+    }
+
+    /* Auteur */
+    .book-card .book-author,
+    .library-book-card .book-author {
+        font-size: 0.75rem;
+        margin-bottom: 0.2rem;
+    }
+
+    /* Année (search only) */
+    .book-card .book-year {
+        font-size: 0.72rem;
+        margin-bottom: 0.3rem;
+    }
+
+    /* Genre badge */
+    .book-card .genre-badge {
+        font-size: 0.68rem;
+        padding: 0.1rem 0.35rem;
+    }
+
+    /* Rating row */
+    .book-card .book-rating-row,
+    .book-card .book-rating-empty {
+        font-size: 0.72rem;
+        margin-bottom: 0.2rem;
+    }
+
+    /* Bouton "Ajouter à ma bibliothèque" (search) : pleine largeur, texte enroulable */
+    .book-card .btn.btn-secondary.btn-sm {
+        width: 100%;
+        font-size: 0.72rem;
+        padding: 0.3rem 0.4rem;
+        white-space: normal;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    /* Bibliothèque — badge étagère */
+    .book-shelf-badge {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.45rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Bibliothèque — zone d'actions (déplacer + supprimer) */
+    .book-actions {
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .book-action-label {
+        font-size: 0.72rem;
+    }
+
+    .book-shelf-select {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.3rem;
+    }
+
+    .btn-delete {
+        font-size: 1rem;
+        padding: 0.25rem 0.4rem;
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR SESSION BUTTON (desktop uniquement)
    ═══════════════════════════════════════════════════════════════ */
@@ -6354,18 +6445,46 @@ body.dark-mode .reaction-chip--mine {
     color: var(--danger-text);
 }
 
-/* ── Couverture pleine largeur ────────────────────────────── */
+/* ── Couverture : cadre centré avec fond secondaire ──────── */
 .agora-cover-wrap {
     margin: 0 -1rem;
+    /* Padding defines the visual canvas (1.25rem above/below = 20px cushion for shadow).
+       No overflow:hidden — the image is constrained by max-height/max-width on the
+       image itself. This guarantees the cover is NEVER clipped by the container. */
+    padding: 1.25rem 1rem;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Inner 2:3 portrait container — represents the book cover slot */
+.agora-cover-inner {
+    /* 2:3 ratio (width:height = 2:3, same as 16×24cm) */
+    aspect-ratio: 2 / 3;
+    /* Max height = colored frame (padding 1.25rem × 2 = 40px) → 240px fills the canvas */
+    max-height: 240px;
+    /* Width follows the 2:3 ratio: at 240px tall → 160px wide */
+    width: auto;
+    /* Clip the image to the container's rounded corners without cropping content:
+       overflow:hidden here only clips border-radius visual, not the image itself,
+       because the image is sized to fit exactly via object-fit:contain */
     overflow: hidden;
+    border-radius: 4px;
+    flex-shrink: 0;
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.45),
+        0 1px 5px  rgba(0, 0, 0, 0.25);
 }
 
 .agora-cover {
-    width: 100%;
-    height: 280px;
+    /* Fill the 2:3 container entirely */
     display: block;
-    object-fit: cover;
-    background: var(--bg-tertiary);
+    width: 100%;
+    height: 100%;
+    /* contain = entire image always visible, natural proportions preserved,
+       letterboxed with transparent background if ratio differs from 2:3 */
+    object-fit: contain;
 }
 
 /* ── Texte / légende ──────────────────────────────────────── */

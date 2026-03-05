@@ -55,10 +55,15 @@
             </div>
 
             <!-- ── Couverture pleine largeur ───────────────────────── -->
-            <div class="agora-cover-wrap" ng-if="post.image_url">
-                <img class="agora-cover"
-                     ng-src="{{ post.image_url }}"
-                     alt="Couverture">
+            <div class="agora-cover-wrap"
+                 ng-if="post.image_url"
+                 ng-style="{'background-color': post._coverBg}">
+                <div class="agora-cover-inner">
+                    <img class="agora-cover"
+                         ng-src="{{ post.image_url }}"
+                         alt="Couverture"
+                         levr-cover-color="post">
+                </div>
             </div>
 
             <!-- ── Texte / légende ─────────────────────────────────── -->
