@@ -141,6 +141,36 @@ angular.module('levrApp').controller('AgoraController', [
             });
         };
 
+        /** Affiche / masque le champ de réponse sous un commentaire. */
+        $scope.toggleReply = function(comment) {
+            comment._showReplyInput = !comment._showReplyInput;
+            if (comment._showReplyInput) comment._replyText = '';
+        };
+
+        /** Envoie une réponse à un commentaire. */
+        $scope.submitReply = function(post, comment) {
+            if (!$scope.currentLevrUser || !comment._replyText || !comment._replyText.trim()) return;
+            PostService.addReply(post, comment, comment._replyText, $scope.currentLevrUser).catch(function(err) {
+                console.error('[AgoraController] addReply error:', err);
+            });
+        };
+
+        /** Gère Entrée dans le champ de réponse. */
+        $scope.onReplyKeypress = function(event, post, comment) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                $scope.submitReply(post, comment);
+            }
+        };
+
+        /** Supprime une réponse. */
+        $scope.deleteReply = function(post, parentComment, reply) {
+            if (!$scope.currentUser) return;
+            PostService.deleteReply(post, parentComment, reply, $scope.currentUser.id).catch(function(err) {
+                console.error('[AgoraController] deleteReply error:', err);
+            });
+        };
+
         /**
          * Supprime un de ses propres posts.
          * Diffuse 'post:deleted' pour synchroniser Mon profil si ouvert.

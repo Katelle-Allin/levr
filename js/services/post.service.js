@@ -158,10 +158,29 @@ angular.module('levrApp').factory('PostService', [
             ? likes.some(function(l) { return l.user_id === currentUserId; })
             : false;
 
-        post.comments = comments.slice().sort(function(a, b) {
+        var sorted = comments.slice().sort(function(a, b) {
             return new Date(a.created_at) - new Date(b.created_at);
         });
-        post.comments_count   = post.comments.length;
+
+        // Build reply tree: root comments in post.comments, replies nested in comment._replies
+        var rootComments = [];
+        var commentMap   = {};
+        sorted.forEach(function(c) {
+            c._replies          = [];
+            c._showReplyInput   = false;
+            c._replyText        = '';
+            commentMap[c.id]    = c;
+        });
+        sorted.forEach(function(c) {
+            if (c.parent_comment_id && commentMap[c.parent_comment_id]) {
+                commentMap[c.parent_comment_id]._replies.push(c);
+            } else {
+                rootComments.push(c);
+            }
+        });
+
+        post.comments         = rootComments;
+        post.comments_count   = sorted.length; // total including replies
         post.showAllComments  = false;
         post.showCommentInput = false;
         post.newComment       = '';
@@ -204,7 +223,7 @@ angular.module('levrApp').factory('PostService', [
         // Requête commentaires (échoue silencieusement si table absente)
         var pComments = supabase
             .from('LEVR_post_comments')
-            .select('id, post_id, user_id, content, created_at, LEVR_users!user_id(username, profile_picture)')
+            .select('id, post_id, parent_comment_id, user_id, content, created_at, LEVR_users!user_id(username, profile_picture)')
             .in('post_id', ids)
             .order('created_at', { ascending: true });
 
@@ -660,7 +679,8 @@ angular.module('levrApp').factory('PostService', [
                 if (post.comments[i].id === comment.id) { idx = i; break; }
             }
             if (idx > -1) post.comments.splice(idx, 1);
-            post.comments_count--;
+            // Decrement total: 1 for the comment + its replies
+            post.comments_count -= (1 + (comment._replies ? comment._replies.length : 0));
 
             supabase
                 .from('LEVR_post_comments')
@@ -670,6 +690,116 @@ angular.module('levrApp').factory('PostService', [
                 .then(function(response) {
                     if (response.error) {
                         if (idx > -1) post.comments.splice(idx, 0, comment);
+                        post.comments_count += (1 + (comment._replies ? comment._replies.length : 0));
+                        deferred.reject(buildErrMsg(response.error));
+                    } else {
+                        deferred.resolve();
+                    }
+                })
+                .catch(function(e) { deferred.reject(buildErrMsg(e)); });
+
+            return deferred.promise;
+        },
+
+        /**
+         * Ajoute une réponse à un commentaire (optimiste).
+         * @param {Object} post           - objet post enrichi
+         * @param {Object} parentComment  - commentaire parent (modifié en place)
+         * @param {string} content        - texte de la réponse
+         * @param {Object} currentUser    - { id, username, profile_picture }
+         * @returns {Promise}
+         */
+        addReply: function(post, parentComment, content, currentUser) {
+            var deferred = $q.defer();
+
+            if (!content || !content.trim()) {
+                deferred.reject('Réponse vide');
+                return deferred.promise;
+            }
+
+            var tempId = 'temp_' + Date.now();
+            var tempReply = {
+                id:                tempId,
+                post_id:           post.id,
+                parent_comment_id: parentComment.id,
+                user_id:           currentUser.id,
+                content:           content.trim(),
+                created_at:        new Date().toISOString(),
+                LEVR_users: {
+                    username:        currentUser.username,
+                    profile_picture: currentUser.profile_picture || null
+                },
+                _replies:  [],
+                _pending:  true
+            };
+
+            parentComment._replies = parentComment._replies || [];
+            parentComment._replies.push(tempReply);
+            post.comments_count++;
+            parentComment._showReplyInput = false;
+            parentComment._replyText      = '';
+
+            supabase
+                .from('LEVR_post_comments')
+                .insert([{
+                    post_id:           post.id,
+                    parent_comment_id: parentComment.id,
+                    user_id:           currentUser.id,
+                    content:           content.trim()
+                }])
+                .select('id, post_id, parent_comment_id, user_id, content, created_at, LEVR_users!user_id(username, profile_picture)')
+                .then(function(response) {
+                    if (response.error) {
+                        var idx = -1;
+                        for (var i = 0; i < parentComment._replies.length; i++) {
+                            if (parentComment._replies[i].id === tempId) { idx = i; break; }
+                        }
+                        if (idx > -1) parentComment._replies.splice(idx, 1);
+                        post.comments_count--;
+                        deferred.reject(buildErrMsg(response.error));
+                        return;
+                    }
+                    var real = response.data[0];
+                    real._pending = false;
+                    real._replies = [];
+                    var idx = -1;
+                    for (var i = 0; i < parentComment._replies.length; i++) {
+                        if (parentComment._replies[i].id === tempId) { idx = i; break; }
+                    }
+                    if (idx > -1) parentComment._replies[idx] = real;
+                    deferred.resolve(real);
+                })
+                .catch(function(e) { deferred.reject(buildErrMsg(e)); });
+
+            return deferred.promise;
+        },
+
+        /**
+         * Supprime une réponse (optimiste).
+         * @param {Object} post           - objet post enrichi
+         * @param {Object} parentComment  - commentaire parent
+         * @param {Object} reply          - réponse à supprimer
+         * @param {string} currentUserId
+         * @returns {Promise}
+         */
+        deleteReply: function(post, parentComment, reply, currentUserId) {
+            var deferred = $q.defer();
+
+            var idx = -1;
+            for (var i = 0; i < parentComment._replies.length; i++) {
+                if (parentComment._replies[i].id === reply.id) { idx = i; break; }
+            }
+            if (idx > -1) parentComment._replies.splice(idx, 1);
+            post.comments_count--;
+
+            supabase
+                .from('LEVR_post_comments')
+                .delete()
+                .eq('id', reply.id)
+                .eq('user_id', currentUserId)
+                .then(function(response) {
+                    if (response.error) {
+                        if (idx > -1) parentComment._replies.splice(idx, 0, reply);
                         post.comments_count++;
                         deferred.reject(buildErrMsg(response.error));
                     } else {

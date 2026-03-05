@@ -55,6 +55,9 @@ angular.module('levrApp').controller('BookCtrl', [
         $scope.showShelfPicker = false;
         $scope.libError        = '';
 
+        // Amazon affiliate
+        $scope.amazonUrl = null;
+
         // ── Helpers bibliothèque ─────────────────────────────────────────────
 
         $scope.formatShelfName = function(shelf) {
@@ -176,6 +179,95 @@ angular.module('levrApp').controller('BookCtrl', [
             $scope.avgRating = Math.round((sum / reviews.length) * 10) / 10;
         }
 
+        // ── Amazon affiliate helper ──────────────────────────────────────────
+
+        /**
+         * Convertit un ISBN-13 débutant par "978" en ISBN-10.
+         * Retourne null si la conversion est impossible (préfixe "979" ou format invalide).
+         */
+        function isbn13ToIsbn10(isbn13) {
+            var digits = String(isbn13).replace(/[^0-9]/g, '');
+            if (digits.length !== 13 || digits.slice(0, 3) !== '978') return null;
+            var core = digits.slice(3, 12); // 9 chiffres après "978"
+            var sum = 0;
+            for (var i = 0; i < 9; i++) {
+                sum += parseInt(core[i]) * (10 - i);
+            }
+            var check = (11 - (sum % 11)) % 11;
+            return core + (check === 10 ? 'X' : String(check));
+        }
+
+        /** Normalise un objet langue OpenLibrary ({key:"/languages/eng"} ou string) en code court. */
+        function normalizeLang(lang) {
+            if (!lang) return '';
+            var key = (typeof lang === 'object') ? (lang.key || '') : String(lang);
+            var idx = key.lastIndexOf('/');
+            return (idx >= 0 ? key.slice(idx + 1) : key).toLowerCase();
+        }
+
+        var EN_LANGS = ['eng', 'en'];
+        var FR_LANGS = ['fre', 'fra', 'fr'];
+
+        /**
+         * Cherche le meilleur ISBN (isbn_10 préféré) dans les éditions OpenLibrary
+         * dont la langue correspond au code normalisé.
+         * Si la langue est inconnue (hors EN/FR), toutes les éditions sont candidates.
+         * Retourne { isbn10, isbn13 } ou null.
+         */
+        function findIsbnForLang(editions, langCode) {
+            if (!editions || !editions.entries) return null;
+
+            var isEn = EN_LANGS.indexOf(langCode) >= 0;
+            var isFr = FR_LANGS.indexOf(langCode) >= 0;
+            var knownLang = isEn || isFr;
+            var targetSet = isEn ? EN_LANGS : (isFr ? FR_LANGS : null);
+
+            var isbn10 = null, isbn13 = null;
+            var entries = editions.entries;
+
+            // Langue inconnue → pas de filtre fiable, forcer le fallback recherche
+            if (!knownLang) return null;
+
+            for (var i = 0; i < entries.length; i++) {
+                var ent   = entries[i];
+                var langs = ent.languages || [];
+                if (langs.length === 0) continue;
+                var match = langs.some(function(l) {
+                    return targetSet.indexOf(normalizeLang(l)) >= 0;
+                });
+                if (!match) continue;
+                if (!isbn10 && ent.isbn_10 && ent.isbn_10.length > 0) isbn10 = ent.isbn_10[0];
+                if (!isbn13 && ent.isbn_13 && ent.isbn_13.length > 0) isbn13 = ent.isbn_13[0];
+                if (isbn10) break;
+            }
+            return (isbn10 || isbn13) ? { isbn10: isbn10, isbn13: isbn13 } : null;
+        }
+
+        /**
+         * Construit le lien Amazon FR affilié le plus précis possible.
+         *  1. ISBN-10 direct                   → /dp/{isbn10}
+         *  2. ISBN-13 "978…" converti          → /dp/{isbn10 calculé}
+         *  3. Sinon                             → /s?k={titre+auteur[+ "english edition"]}
+         * "english edition" ajouté au fallback uniquement pour les livres EN.
+         */
+        function buildAmazonUrl(isbn10, isbn13, title, author, langCode) {
+            var tag  = 'thebookclubap-21';
+            var asin = isbn10 || null;
+
+            if (!asin && isbn13) {
+                asin = isbn13ToIsbn10(isbn13); // null si "979…"
+            }
+
+            if (asin) {
+                return 'https://www.amazon.fr/dp/' + asin + '/?tag=' + tag;
+            }
+
+            // Fallback : recherche par titre + auteur
+            var base = ((title || '') + ' ' + (author || '')).trim();
+            if (EN_LANGS.indexOf(langCode) >= 0) base += ' english edition';
+            return 'https://www.amazon.fr/s?k=' + encodeURIComponent(base) + '&tag=' + tag;
+        }
+
         // ── Chargement ────────────────────────────────────────────────────────
 
         function loadAll() {
@@ -192,25 +284,29 @@ angular.module('levrApp').controller('BookCtrl', [
                 }
 
                 // Promesses parallèles
-                var dbPromise       = BookService.getBookById(bookId);
-                var olPromise       = $http.get('https://openlibrary.org/works/' + bookId + '.json')
-                                          .then(function(r) { return r.data; })
-                                          .catch(function() { return null; });
-                var reviewsPromise  = ReviewService.getBookReviews(bookId);
-                var myRevPromise    = user
-                                        ? ReviewService.getMyReview(bookId, user.id)
-                                        : $q.resolve(null);
-                var userBookPromise = user
-                                        ? BookService.getMyLibraryEntry(bookId)
-                                        : $q.resolve(null);
+                var dbPromise        = BookService.getBookById(bookId);
+                var olPromise        = $http.get('https://openlibrary.org/works/' + bookId + '.json')
+                                           .then(function(r) { return r.data; })
+                                           .catch(function() { return null; });
+                var editionsPromise  = $http.get('https://openlibrary.org/works/' + bookId + '/editions.json?limit=30')
+                                           .then(function(r) { return r.data; })
+                                           .catch(function() { return null; });
+                var reviewsPromise   = ReviewService.getBookReviews(bookId);
+                var myRevPromise     = user
+                                         ? ReviewService.getMyReview(bookId, user.id)
+                                         : $q.resolve(null);
+                var userBookPromise  = user
+                                         ? BookService.getMyLibraryEntry(bookId)
+                                         : $q.resolve(null);
 
-                $q.all([dbPromise, olPromise, reviewsPromise, myRevPromise, userBookPromise])
+                $q.all([dbPromise, olPromise, editionsPromise, reviewsPromise, myRevPromise, userBookPromise])
                     .then(function(results) {
-                        var dbBook   = results[0];
-                        var olWork   = results[1];
-                        var reviews  = results[2];
-                        var myRev    = results[3];
-                        var userBook = results[4];
+                        var dbBook    = results[0];
+                        var olWork    = results[1];
+                        var editions  = results[2];
+                        var reviews   = results[3];
+                        var myRev     = results[4];
+                        var userBook  = results[5];
 
                         // ── Fusion des données ────────────────────────────────
                         var merged = cached || {};
@@ -275,6 +371,19 @@ angular.module('levrApp').controller('BookCtrl', [
                                     .catch(angular.noop);
                             }
                         }
+
+                        // ── ISBN → lien Amazon FR affilié (langue cible) ─────
+                        // Langue du work OpenLibrary normalisée (ex: "eng", "fre", "fra")
+                        var langCode = '';
+                        if (olWork && olWork.languages && olWork.languages.length > 0) {
+                            langCode = normalizeLang(olWork.languages[0]);
+                        }
+                        var isbnResult = findIsbnForLang(editions, langCode);
+                        $scope.amazonUrl = buildAmazonUrl(
+                            isbnResult ? isbnResult.isbn10 : null,
+                            isbnResult ? isbnResult.isbn13 : null,
+                            merged.title, merged.author, langCode
+                        );
 
                         // ── Bibliothèque ──────────────────────────────────────
                         $scope.userBook = userBook || null;

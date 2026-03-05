@@ -2285,6 +2285,63 @@ body {
     transform: none;
 }
 
+/* ── Comment body (wraps bubble + reply btn + reply input + replies) */
+.comment-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* ── "Répondre" link under a comment */
+.comment-reply-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    text-align: left;
+    transition: color 0.14s;
+    align-self: flex-start;
+    margin-left: 0.1rem;
+}
+.comment-reply-btn:hover { color: var(--accent); }
+
+/* ── Reply input row (same layout as comment-input-row, slightly indented) */
+.comment-reply-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.15rem;
+}
+
+/* ── Small avatar (replies + reply input) */
+.comment-avatar--sm {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+}
+
+/* ── Replies block (indented under parent comment) */
+.comment-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding-left: 0.6rem;
+    border-left: 2px solid var(--border-color);
+}
+
+/* ── Individual reply row */
+.comment-reply-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MON PROFIL — section "Mes posts"
    ═══════════════════════════════════════════════════════════════ */
@@ -3867,6 +3924,28 @@ body.dark-mode .reaction-chip--mine {
 
 .desc-toggle:hover {
     text-decoration: underline;
+}
+
+/* ── Bouton Amazon affilié ───────────────────────────────────────────── */
+.btn-amazon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #ff9900;
+    color: #111;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.btn-amazon:hover {
+    background: #e68a00;
+    transform: translateY(-1px);
 }
 
 /* ── Section générique (Mon avis / Communauté) ────────────────────── */

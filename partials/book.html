@@ -106,6 +106,15 @@
                         {{ showFullDesc ? 'Lire moins ▲' : 'Lire plus ▼' }}
                     </button>
                 </div>
+
+                <!-- Amazon affiliate link (hidden when no ISBN) -->
+                <a ng-if="amazonUrl"
+                   ng-href="{{ amazonUrl }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-amazon">
+                    📖 Acheter sur Amazon
+                </a>
             </div>
         </div>
 
