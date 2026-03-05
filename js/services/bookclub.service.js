@@ -251,6 +251,41 @@
                     return deferred.promise;
                 },
 
+                /**
+                 * Supprime un fil de discussion ainsi que tous ses messages et réactions.
+                 * Requiert que l'appelant soit owner du bookclub (vérification côté serveur via RLS).
+                 * @param {string} discussionId
+                 * @returns {Promise<boolean>}
+                 */
+                deleteDiscussion: function (discussionId) {
+                    var deferred = $q.defer();
+                    // Étape 1 : récupérer les IDs des messages pour supprimer les réactions
+                    supabase
+                        .from('levr_messages')
+                        .select('id')
+                        .eq('discussion_id', discussionId)
+                        .then(function (msgResp) {
+                            if (msgResp.error) { deferred.reject(buildErrMsg(msgResp.error)); return $q.reject(); }
+                            var msgIds = (msgResp.data || []).map(function (m) { return m.id; });
+                            var reactP = msgIds.length
+                                ? supabase.from('levr_message_reactions').delete().in('message_id', msgIds)
+                                : $q.when(true);
+                            return $q.when(reactP).then(function () {
+                                // Étape 2 : supprimer les messages
+                                return supabase.from('levr_messages').delete().eq('discussion_id', discussionId);
+                            }).then(function (mResp) {
+                                if (mResp && mResp.error) { return $q.reject(buildErrMsg(mResp.error)); }
+                                // Étape 3 : supprimer la discussion (RLS vérifie que l'appelant est owner)
+                                return supabase.from('levr_discussions').delete().eq('id', discussionId);
+                            }).then(function (dResp) {
+                                if (dResp && dResp.error) { deferred.reject(buildErrMsg(dResp.error)); return; }
+                                deferred.resolve(true);
+                            });
+                        })
+                        .catch(function (e) { deferred.reject(buildErrMsg(e)); });
+                    return deferred.promise;
+                },
+
                 // ── MESSAGES ─────────────────────────────────────────────────
 
                 /**

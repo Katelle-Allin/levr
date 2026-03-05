@@ -169,141 +169,122 @@ angular.module('levrApp').factory('ProfileService', ['$q', 'supabase', 'AuthServ
         },
 
         /**
-         * Récupérer les statistiques de lecture de l'utilisateur connecté
-         * @returns {Promise}
+         * Récupérer les statistiques de lecture de l'utilisateur connecté.
+         * Retourne : { lu, lu_annee, pages_annee }
+         *   lu          – livres lus au total (tous statuts 'LU')
+         *   lu_annee    – livres ajoutés comme 'LU' cette année (proxy via created_at)
+         *   pages_annee – pages réellement lues cette année (LEVR_reading_sessions)
+         * @returns {Promise<{lu, lu_annee, pages_annee}>}
          */
         getMyStats: function() {
             var deferred = $q.defer();
 
             AuthService.getUser().then(function(user) {
-                if (!user) {
-                    deferred.reject('User not authenticated');
-                    return;
-                }
+                if (!user) { deferred.reject('User not authenticated'); return; }
 
-                var stats = {
-                    lu: 0,
-                    en_cours: 0,
-                    a_lire: 0,
-                    total_pages: 0,
-                    genre_favori: null
-                };
+                var yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString(); // e.g. 2026-01-01T00:00:00.000Z
+                var yearStartDate = new Date().getFullYear() + '-01-01';               // for date_local (plain date column)
 
-                // Récupérer les livres avec leurs informations
-                supabase
-                    .from('LEVR_user_books')
-                    .select('status, book_id, LEVR_books(page_count)')
-                    .eq('user_id', user.id)
-                    .then(function(response) {
-                        if (response.error) {
-                            deferred.reject(response.error);
-                            return;
-                        }
+                // Requête 1 : livres lus (total + cette année via created_at)
+                var booksP = $q(function(resolve) {
+                    supabase
+                        .from('LEVR_user_books')
+                        .select('status, created_at')
+                        .eq('user_id', user.id)
+                        .eq('status', 'LU')
+                        .then(function(res) {
+                            var rows  = res.error ? [] : (res.data || []);
+                            var lu    = rows.length;
+                            var lu_annee = rows.filter(function(r) {
+                                return r.created_at && r.created_at >= yearStart;
+                            }).length;
+                            resolve({ lu: lu, lu_annee: lu_annee });
+                        })
+                        .catch(function() { resolve({ lu: 0, lu_annee: 0 }); });
+                });
 
-                        var books = response.data;
+                // Requête 2 : pages réelles lues cette année (LEVR_reading_sessions)
+                var pagesP = $q(function(resolve) {
+                    supabase
+                        .from('LEVR_reading_sessions')
+                        .select('pages_read')
+                        .eq('user_id', user.id)
+                        .gte('date_local', yearStartDate)
+                        .then(function(res) {
+                            var rows  = res.error ? [] : (res.data || []);
+                            var total = rows.reduce(function(sum, r) {
+                                return sum + (parseInt(r.pages_read, 10) || 0);
+                            }, 0);
+                            resolve(total);
+                        })
+                        .catch(function() { resolve(0); });
+                });
 
-                        // Compter par statut
-                        books.forEach(function(book) {
-                            if (book.status === 'LU') {
-                                stats.lu++;
-                                // Ajouter les pages si disponibles
-                                if (book.LEVR_books && book.LEVR_books.page_count) {
-                                    stats.total_pages += book.LEVR_books.page_count;
-                                }
-                            } else if (book.status === 'EN_COURS') {
-                                stats.en_cours++;
-                            } else if (book.status === 'A_LIRE') {
-                                stats.a_lire++;
-                            }
-                        });
-
-                        // Récupérer le profil pour avoir favorite_genres
-                        supabase
-                            .from('LEVR_users')
-                            .select('favorite_genres')
-                            .eq('id', user.id)
-                            .single()
-                            .then(function(profileResponse) {
-                                if (profileResponse.data && profileResponse.data.favorite_genres && profileResponse.data.favorite_genres.length > 0) {
-                                    stats.genre_favori = profileResponse.data.favorite_genres[0];
-                                }
-                                deferred.resolve(stats);
-                            });
-                    })
-                    .catch(function(error) {
-                        deferred.reject(error);
+                $q.all([booksP, pagesP]).then(function(results) {
+                    deferred.resolve({
+                        lu:          results[0].lu,
+                        lu_annee:    results[0].lu_annee,
+                        pages_annee: results[1]
                     });
-            }).catch(function(error) {
-                deferred.reject(error);
-            });
+                }).catch(function() {
+                    deferred.resolve({ lu: 0, lu_annee: 0, pages_annee: 0 });
+                });
+
+            }).catch(function(error) { deferred.reject(error); });
 
             return deferred.promise;
         },
 
         /**
-         * Récupérer les statistiques d'un autre utilisateur (si profil public)
+         * Récupérer les statistiques d'un autre utilisateur (si profil public).
+         * Retourne : { lu, lu_annee, pages_annee }
+         * Note : pages_annee est estimé via page_count des livres (les sessions sont privées via RLS).
          * @param {string} userId - ID de l'utilisateur
-         * @returns {Promise}
+         * @returns {Promise<{lu, lu_annee, pages_annee}>}
          */
         getUserStats: function(userId) {
             var deferred = $q.defer();
 
-            var stats = {
-                lu: 0,
-                en_cours: 0,
-                a_lire: 0,
-                total_pages: 0,
-                genre_favori: null
-            };
-
             // Vérifier si le profil est public
             supabase
                 .from('LEVR_users')
-                .select('is_public, favorite_genres')
+                .select('is_public')
                 .eq('id', userId)
                 .single()
                 .then(function(profileResponse) {
-                    if (profileResponse.error || !profileResponse.data.is_public) {
+                    if (profileResponse.error || !profileResponse.data || !profileResponse.data.is_public) {
                         deferred.reject('Profil privé');
                         return;
                     }
 
-                    if (profileResponse.data.favorite_genres && profileResponse.data.favorite_genres.length > 0) {
-                        stats.genre_favori = profileResponse.data.favorite_genres[0];
-                    }
+                    var yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
 
-                    // Récupérer les livres
                     supabase
                         .from('LEVR_user_books')
-                        .select('status, book_id, LEVR_books(page_count)')
+                        .select('status, created_at, LEVR_books(page_count)')
                         .eq('user_id', userId)
-                        .then(function(response) {
-                            if (response.error) {
-                                deferred.reject(response.error);
-                                return;
-                            }
-
-                            var books = response.data;
-
-                            books.forEach(function(book) {
-                                if (book.status === 'LU') {
-                                    stats.lu++;
-                                    if (book.LEVR_books && book.LEVR_books.page_count) {
-                                        stats.total_pages += book.LEVR_books.page_count;
+                        .eq('status', 'LU')
+                        .then(function(res) {
+                            var rows      = res.error ? [] : (res.data || []);
+                            var lu        = rows.length;
+                            var lu_annee  = 0;
+                            var pages_annee = 0;
+                            rows.forEach(function(r) {
+                                var isThisYear = r.created_at && r.created_at >= yearStart;
+                                if (isThisYear) {
+                                    lu_annee++;
+                                    if (r.LEVR_books && r.LEVR_books.page_count) {
+                                        pages_annee += (parseInt(r.LEVR_books.page_count, 10) || 0);
                                     }
-                                } else if (book.status === 'EN_COURS') {
-                                    stats.en_cours++;
-                                } else if (book.status === 'A_LIRE') {
-                                    stats.a_lire++;
                                 }
                             });
-
-                            deferred.resolve(stats);
+                            deferred.resolve({ lu: lu, lu_annee: lu_annee, pages_annee: pages_annee });
+                        })
+                        .catch(function() {
+                            deferred.resolve({ lu: 0, lu_annee: 0, pages_annee: 0 });
                         });
                 })
-                .catch(function(error) {
-                    deferred.reject(error);
-                });
+                .catch(function(error) { deferred.reject(error); });
 
             return deferred.promise;
         }

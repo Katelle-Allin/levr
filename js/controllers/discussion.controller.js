@@ -26,6 +26,11 @@
             $scope.replyTo        = null;
             $scope.emojis         = ['👍', '❤️', '😂', '😮', '😢'];
 
+            // Delete discussion (owner only)
+            $scope.deleteConfirm  = false;
+            $scope.deleting       = false;
+            $scope.deleteError    = '';
+
             // ── Helpers ───────────────────────────────────────────────────────
             function scrollToBottom() {
                 $timeout(function () {
@@ -44,6 +49,31 @@
 
             $scope.goBack = function () {
                 $location.path('/bookclubs/' + clubId);
+            };
+
+            $scope.requestDeleteDiscussion = function () {
+                $scope.deleteConfirm = true;
+                $scope.deleteError   = '';
+            };
+
+            $scope.cancelDeleteDiscussion = function () {
+                $scope.deleteConfirm = false;
+                $scope.deleteError   = '';
+            };
+
+            $scope.confirmDeleteDiscussion = function () {
+                if (!$scope.isOwner() || $scope.deleting) { return; }
+                $scope.deleting     = true;
+                $scope.deleteError  = '';
+                BookclubService.deleteDiscussion(discussionId)
+                    .then(function () {
+                        $location.path('/bookclubs/' + clubId);
+                    })
+                    .catch(function (err) {
+                        $scope.deleteError  = typeof err === 'string' ? err : (err.message || 'Erreur lors de la suppression.');
+                        $scope.deleting     = false;
+                        $scope.deleteConfirm = false;
+                    });
             };
 
             $scope.formatDate = function (dateStr) {
@@ -73,7 +103,11 @@
                         });
 
                     var msgsP = BookclubService.getMessages(discussionId)
-                        .then(function (msgs) { $scope.messages = msgs; });
+                        .then(function (msgs) {
+                            var uid = user.id;
+                            msgs.forEach(function (m) { m._isOwn = (m.sender_id === uid); });
+                            $scope.messages = msgs;
+                        });
 
                     var roleP = BookclubService.getMyRole(clubId, user.id)
                         .then(function (role) { $scope.myRole = role; })
@@ -112,6 +146,7 @@
                             username:        appUser ? appUser.username        : '—',
                             profile_picture: appUser ? appUser.profile_picture : null
                         };
+                        msg._isOwn = true;
                         if (replyTo) {
                             msg.reply_to_message_id = replyTo.id;
                             msg.reply_to_username   = replyTo.username;

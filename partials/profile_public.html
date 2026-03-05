@@ -88,28 +88,20 @@
             <h3>Statistiques de lecture</h3>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">📚</div>
-                    <div class="stat-value">{{ stats.lu }}</div>
-                    <div class="stat-label">Livres lus</div>
+                    <span class="stat-value">{{ stats.lu_annee }}</span>
+                    <span class="stat-label">Livres lus</span>
+                    <span class="stat-sublabel">cette année</span>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">📖</div>
-                    <div class="stat-value">{{ stats.en_cours }}</div>
-                    <div class="stat-label">En cours</div>
+                    <span class="stat-value">{{ stats.lu }}</span>
+                    <span class="stat-label">Livres lus</span>
+                    <span class="stat-sublabel">au total</span>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">📝</div>
-                    <div class="stat-value">{{ stats.a_lire }}</div>
-                    <div class="stat-label">À lire</div>
+                    <span class="stat-value">{{ stats.pages_annee }}</span>
+                    <span class="stat-label">Pages lues</span>
+                    <span class="stat-sublabel">cette année</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📄</div>
-                    <div class="stat-value">{{ stats.total_pages }}</div>
-                    <div class="stat-label">Pages lues</div>
-                </div>
-            </div>
-            <div ng-if="stats.genre_favori" class="favorite-genre">
-                <strong>Genre le plus fréquent :</strong> {{ stats.genre_favori }}
             </div>
         </div>
 

@@ -572,10 +572,6 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
     .profile-public-header {
         flex-direction: column;
         text-align: center;
@@ -789,57 +785,59 @@ body {
 /* ==================== STATISTIQUES DE LECTURE ==================== */
 .stats-card {
     background: var(--card-bg);
-    padding: 2rem;
+    padding: 1rem 1.25rem;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
 }
 
 .stats-card h3 {
-    color: var(--accent-blue);
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
 }
 
+/* 3-col flex strip — compact on every screen width */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0;
 }
 
 .stat-card {
-    background: rgba(0, 47, 167, 0.08);
-    padding: 1.5rem;
-    border-radius: 8px;
+    flex: 1;
     text-align: center;
-    border: 1px solid rgba(0, 47, 167, 0.2);
+    padding: 0.5rem 0.5rem 0.6rem;
+    border-right: 1px solid var(--border-color);
 }
-
-.stat-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+.stat-card:last-child {
+    border-right: none;
 }
 
 .stat-card .stat-value {
     display: block;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--accent-blue);
-    margin: 0.5rem 0;
+    line-height: 1;
+    margin-bottom: 0.25rem;
 }
 
 .stat-card .stat-label {
     display: block;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    line-height: 1.2;
 }
 
-.favorite-genre {
-    text-align: center;
-    padding: 1rem;
-    background: rgba(0, 47, 167, 0.05);
-    border-radius: 8px;
-    color: var(--text-primary);
+.stat-sublabel {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 0.1rem;
 }
 
 /* ==================== PROFIL PUBLIC ==================== */
@@ -963,8 +961,29 @@ body {
     box-shadow: 0 0 0 3px rgba(0, 47, 167, 0.1);
 }
 
-.search-btn {
-    white-space: nowrap;
+.search-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: var(--accent-blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-icon-btn:hover:not(:disabled) {
+    background: var(--accent-blue-hover, #0039c4);
+}
+
+.search-icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .search-results {
@@ -3288,6 +3307,25 @@ body {
     min-height: 400px;
 }
 
+/* Sur mobile : la page discussion devient un panneau fixe entre la topbar
+   et la bottom-nav. Cela retire la vue du flux normal et garantit que la
+   bottom-nav reste toujours cliquable (plus de débordement possible). */
+@media (max-width: 768px) {
+    .discussion-page {
+        position: fixed;
+        top: var(--topbar-height);
+        bottom: calc(64px + env(safe-area-inset-bottom));
+        left: 0;
+        right: 0;
+        background: var(--bg-primary);
+        z-index: 10;
+        overflow: hidden;
+    }
+    .discussion-container {
+        height: 100%;
+    }
+}
+
 .discussion-header {
     display: flex;
     align-items: center;
@@ -3297,12 +3335,87 @@ body {
     flex-shrink: 0;
 }
 
+/* ── Bouton retour — SVG inline + label du club ──────────── */
+.discussion-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent-blue, #002FA7);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.4rem 0.6rem 0.4rem 0.2rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+    max-width: 38%;
+}
+.discussion-back-btn:hover {
+    background: rgba(0, 47, 167, 0.07);
+}
+.discussion-back-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .discussion-title {
     font-family: var(--font-editorial);
-    font-size: 1.2rem;
+    flex: 1;
+    text-align: center;
+    font-size: 1rem;
     margin: 0;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 0.4rem;
 }
+
+.discussion-kebab-btn {
+    color: var(--text-secondary);
+    padding: 0.4rem;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+}
+.discussion-kebab-btn:hover {
+    color: var(--danger, #E8394C);
+    background: rgba(232, 57, 76, 0.08);
+}
+
+/* ── Confirmation de suppression ─────────────────────────── */
+.discussion-delete-confirm {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    flex-shrink: 0;
+}
+.discussion-delete-msg {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin: 0 0 0.6rem;
+}
+.discussion-delete-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.btn-danger {
+    background: #E8394C;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-danger:hover:not(:disabled) { background: #c92d3e; }
+.btn-danger:disabled              { opacity: 0.5; cursor: not-allowed; }
+.btn-sm { padding: 0.4rem 0.85rem; font-size: 0.85rem; }
 
 /* ── Liste des messages ──────────────────────────────────── */
 .message-list {
@@ -4401,6 +4514,7 @@ body.dark-mode .reaction-chip--mine {
         background: var(--card-bg);
         border-top: 1px solid var(--border-color);
         box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
+        overflow: visible; /* laisse le FAB dépasser au-dessus */
     }
 
     .bottom-nav-link {
@@ -5065,7 +5179,9 @@ body.dark-mode .reaction-chip--mine {
     width: 44px;
     height: 44px;
     min-width: 44px;
-    border-radius: 50
+    border-radius: 50%;
+    object-fit: cover;
+}
 
 /* ================================================================================
    Bookclub — Lecture en cours + Membres (cartes horizontales)
@@ -5693,8 +5809,8 @@ body.dark-mode .reaction-chip--mine {
 .bc-avatar-settings-row {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    gap: 1rem;
+    flex-wrap: nowrap;
 }
 
 .bc-avatar-preview {
@@ -5702,36 +5818,39 @@ body.dark-mode .reaction-chip--mine {
 }
 
 .bc-avatar-preview-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
     object-fit: cover;
     display: block;
 }
 
 .bc-avatar-preview-placeholder {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
     background: var(--accent-blue);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 700;
 }
 
 .bc-avatar-actions {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
 }
 
 .bc-avatar-hint {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-tertiary);
-    margin-top: 0.5rem;
-    margin-bottom: 0;
+    margin: 0;
 }
 
 
@@ -5742,27 +5861,21 @@ body.dark-mode .reaction-chip--mine {
 /* ── Search bar : empilement vertical sur mobile ───────────────── */
 @media (max-width: 600px) {
     .search-box {
-        flex-direction: column;
-        gap: 0.6rem;
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: stretch;
     }
 
-    .search-btn {
-        width: 100%;
+    .search-icon-btn {
+        width: 44px;
+        flex-shrink: 0;
     }
 }
 
-/* ── Profil : 2 stats seulement sur mobile ─────────────────────── */
-@media (max-width: 600px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-
-    /* Masquer "En cours" (2e) et "À lire" (3e) */
-    .stats-grid .stat-card:nth-child(2),
-    .stats-grid .stat-card:nth-child(3) {
-        display: none;
-    }
+/* ── Profil stats : légère réduction des valeurs sur très petit écran ── */
+@media (max-width: 380px) {
+    .stat-card .stat-value { font-size: 1.3rem; }
+    .stat-card .stat-label { font-size: 0.7rem; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -5815,49 +5928,9 @@ body.dark-mode .reaction-chip--mine {
     fill: none;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BOTTOM NAV FAB — bouton central "Session lecture"
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Masqué par défaut (le bottom-nav lui-même est masqué sur desktop) */
+/* .bottom-nav-fab — défini dans le bloc @media (max-width: 768px) principal ci-dessous */
 .bottom-nav-fab {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .bottom-nav-fab {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        background: var(--accent-blue);
-        color: #fff;
-        border: none;
-        /* Double ombre : élévation forte + halo de couleur */
-        box-shadow: 0 6px 20px rgba(0, 47, 167, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12);
-        cursor: pointer;
-        /* Sort légèrement du bord haut de la barre */
-        align-self: center;
-        margin-bottom: 10px;
-        transition: transform 0.14s, box-shadow 0.14s;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .bottom-nav-fab:active {
-        transform: scale(0.91);
-        box-shadow: 0 3px 10px rgba(0, 47, 167, 0.30);
-    }
-
-    .bottom-nav-fab svg {
-        width: 24px;
-        height: 24px;
-        stroke-width: 2;
-        stroke: #fff;
-        fill: none;
-    }
+    display: none; /* masqué sur desktop */
 }
 
 
@@ -6392,6 +6465,7 @@ body.dark-mode .reaction-chip--mine {
         background: var(--card-bg);
         border-top: 1px solid var(--border-color);
         box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.06);
+        overflow: visible; /* laisse le FAB dépasser au-dessus de la barre */
     }
 
     /* Liens latéraux */
@@ -6424,34 +6498,39 @@ body.dark-mode .reaction-chip--mine {
         border-radius: 0 0 3px 3px;
     }
 
-    /* FAB central – Klein Blue */
+    /* ── FAB central : émerge au-dessus de la barre ─────────── */
+    /* Technique : position: relative + top négatif → le bouton
+       reste dans le flux flex (les liens gardent leur place) mais
+       sa représentation visuelle sort vers le haut. overflow:visible
+       sur le nav permet au bouton de s'afficher en dehors. */
     .bottom-nav-fab {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+        position: relative;
+        top: -22px;                                 /* émerge ~22 px au-dessus de la barre */
         width: 56px;
         height: 56px;
         border-radius: 50%;
         background: var(--accent-blue);
-        border: none;
+        border: 3px solid var(--card-bg);           /* anneau de séparation avec la barre */
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         color: #ffffff;
-        box-shadow: 0 4px 18px rgba(0, 47, 167, 0.40);
-        transform: translateY(-10px);         /* flotte au-dessus de la barre */
-        transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        box-shadow: 0 4px 20px rgba(0, 47, 167, 0.45), 0 1px 6px rgba(0,0,0,0.12);
+        transition: transform 0.15s, box-shadow 0.15s;
         -webkit-tap-highlight-color: transparent;
-        position: relative;
         z-index: 1;
     }
-    .bottom-nav-fab svg { width: 24px; height: 24px; stroke-width: 1.75; }
-    .bottom-nav-fab:hover {
-        background: var(--accent-blue-light);
-        transform: translateY(-12px);
-        box-shadow: 0 6px 22px rgba(0, 47, 167, 0.50);
+    .bottom-nav-fab svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2;
+        stroke: #ffffff;
+        fill: none;
     }
     .bottom-nav-fab:active {
-        transform: translateY(-8px);
-        box-shadow: 0 3px 12px rgba(0, 47, 167, 0.35);
+        transform: scale(0.93);
+        box-shadow: 0 2px 10px rgba(0, 47, 167, 0.35);
     }
 }
